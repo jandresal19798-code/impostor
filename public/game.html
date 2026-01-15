@@ -282,7 +282,7 @@
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: #22c55e;
+            background: #ef4444;
             animation: pulse-dot 2s infinite;
         }
 
@@ -326,7 +326,7 @@
 <body class="flex items-center justify-center min-h-screen p-4">
     <div id="connection-status" class="connection-status hidden">
         <div class="status-dot"></div>
-        <span id="status-text">Conectado</span>
+        <span id="status-text">Conectando...</span>
     </div>
     
     <div id="confetti-container" class="fixed inset-0 pointer-events-none z-50 overflow-hidden"></div>
@@ -557,10 +557,19 @@
         socket.on('connect', () => {
             document.getElementById('connection-status').classList.remove('hidden');
             document.getElementById('status-text').textContent = 'Conectado';
+            document.querySelector('.status-dot').classList.add('bg-green-500');
+            document.querySelector('.status-dot').classList.remove('bg-red-500');
         });
 
         socket.on('disconnect', () => {
             document.getElementById('status-text').textContent = 'Desconectado';
+            document.querySelector('.status-dot').classList.remove('bg-green-500');
+            document.querySelector('.status-dot').classList.add('bg-red-500');
+        });
+
+        socket.on('connect_error', (err) => {
+            console.error('Socket connection error:', err);
+            showNotification('Error de conexión');
         });
 
         // Screen management
@@ -620,6 +629,11 @@
             
             if (!playerName) {
                 showNotification('Ingresa tu nombre');
+                return;
+            }
+
+            if (!socket.connected) {
+                showNotification('Conectando... intenta de nuevo');
                 return;
             }
 
