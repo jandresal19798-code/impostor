@@ -86,41 +86,59 @@ app.get('/health', (req, res) => {
 
 // Socket.io connection handling
 io.on('connection', (socket) => {
-    console.log(`Client connected: ${socket.id}`);
-    let currentRoom = null;
-    let playerName = null;
-
-    // Create room
+    console.log(`Client connected: ${socket.id}, transport: ${socket.conn.transport.name}`);
+    
     socket.on('create-room', (name) => {
-        const room = rooms.get(socket.roomCode);
-        if (!room) return;
-
-        playerName = name.trim();
+        console.log(`Create room request from ${socket.id}, name: ${name}`);
+        
+        const playerName = name.trim();
         if (!playerName) {
             socket.emit('error', 'Nombre inválido');
             return;
         }
 
-        // Check if name already exists in room
-        const existingPlayer = room.players.find(p => p.name.toLowerCase() === playerName.toLowerCase());
-        if (existingPlayer) {
-            socket.emit('error', 'Este nombre ya está en uso');
-            return;
-        }
-
-        const player = {
-            id: socket.id,
-            name: playerName,
-            role: null,
-            hasVoted: false,
-            revealed: false
+        // Generate room code
+        let code;
+        do {
+            code = generateRoomCode();
+        } while (rooms.has(code));
+        
+        const room = {
+            code,
+            players: [{
+                id: socket.id,
+                name: playerName,
+                role: null,
+                hasVoted: false,
+                revealed: false
+            }],
+            host: socket.id,
+            gameState: 'lobby',
+            currentPlayer: 0,
+            wordBank: {
+                general: ["Pizza", "París", "iPhone", "Fútbol", "Elefante", "Netflix", "Guitarra", "Dinosaurio", "Chocolate", "Tiburón", "Espada", "Marte", "Cine", "Hamburguesa", "Avión", "Batman", "Zombi", "Minecraft", "Sushi", "Playa", "Robot", "Nube", "Fuego", "Hielo", "Luna", "Sol", "Estrella", "Teléfono", "Reloj", "Cerveza", "Gato", "Perro", "Pájaro", "Coche", "Casa", "Libro", "Agua", "Tierra", "Viento", "Música", "Danza"],
+                peliculas: ["Matrix", "Titanic", "Avatar", "Gladiador", "Frozen", "Toy Story", "Jurassic Park", "El Rey León", "Volver al Futuro", "Star Wars", "Harry Potter", "El Señor de los Anillos", "Spider-Man", "Iron Man", "Batman", "Terminator", "Alien", "Depredador", "Jaws", "Psicosis", "Inception", "Interstellar", "Coco", "Encanto", "Moana", "Buscando a Nemo", "Los Increíbles", "Shrek", "Mi Villano Favorito", "Minions", "Piratas del Caribe", "El Mago de Oz", "E.T.", "Tibbie", "Forrest Gump", "Pulp Fiction"],
+                paises: ["España", "Francia", "Italia", "Alemania", "Japón", "Brasil", "Argentina", "México", "Canadá", "Estados Unidos", "China", "India", "Australia", "Egipto", "Grecia", "Rusia", "Inglaterra", "Portugal", "Colombia", "Perú", "Chile", "Uruguay", "Venezuela", "Cuba", "Corea", "Tailandia", "Vietnam", "Marruecos", "Turquía", "Noruega", "Suecia", "Finlandia", "Dinamarca", "Holanda", "Bélgica", "Suiza", "Austria", "Irlanda", "Escocia"],
+                comida: ["Tacos", "Paella", "Sushi", "Pizza", "Hamburguesa", "Lasaña", "Curry", "Ramen", "Ceviche", "Empanadas", "Churrasco", "Milanesa", "Feijoada", "Bandeja Paisa", "Arepa", "Patacón", "Causa", "Anticuchos", "Chicha", "Pisco Sour", "Guisado", "Tamales", "Pupusas", "Chimichanga", "Enchiladas", "Tostada", "Gordita", "Quesadilla", "Burrito", "Taco", "Pasta", "Risotto", "Paella", "Tortilla", "Croissant", "Bagel", "Donut", "Cupcake", "Brownie"],
+                tecnologia: ["Computadora", "Internet", "Inteligencia Artificial", "Robot", "Aplicación", "Videojuego", "Redes Sociales", "Smartphone", "Tablet", "Wifi", "Bluetooth", "Nube", "Big Data", "Ciberseguridad", "Blockchain", "Criptomoneda", "Realidad Virtual", "Realidad Aumentada", "Drone", "Impresora 3D", "GPS", "Sensor", "Pantalla Táctil", "Procesador", "Memoria", "Disco Duro", "Batería", "Cargador", "Cable", "Auriculares", "Teclado", "Mouse", "Cámara", "Micrófono", "Altavoz", "Router", "Módem", "Servidor", "Base de Datos"],
+                deportes: ["Fútbol", "Baloncesto", "Tenis", "Natación", "Atletismo", "Béisbol", "Fútbol Americano", "Voleibol", "Boxeo", "Artes Marciales", "Gimnasia", "Ciclismo", "Esquí", "Surf", "Escalada", "Golf", "Hockey", "Rugby", "Críquet", "Ping Pong", "Bádminton", "Patinaje", "Lucha", "Carrera", "Maratón", "Triatlón", "Equitación", "Tiro", "Arquería", "Lacrosse", "Handball", "Waterpolo", "Remo", "Piragüismo", "Snowboard", "Skateboard", "BMX", "Wrestling"],
+                animales: ["León", "Tigre", "Elefante", "Jirafa", "Mono", "Conejo", "Perro", "Gato", "Pájaro", "Pez", "Delfín", "Ballena", "Tiburón", "Serpiente", "Lagarto", "Rana", "Tortuga", "Cocodrilo", "Hipopótamo", "Rinoceronte", "Zebra", "Caballo", "Vaca", "Cerdo", "Oveja", "Gallo", "Pato", "Águila", "Búho", "Murciélago", "Lobo", "Zorro", "Oso", "Panda", "Koala", "Canguro", "Pingüino", "Foca", "Ballena", "Pulpo"],
+                colores: ["Rojo", "Azul", "Verde", "Amarillo", "Naranja", "Morado", "Rosa", "Negro", "Blanco", "Gris", "Marrón", "Beige", "Celeste", "Turquesa", "Violeta", "Lila", "Dorado", "Plateado", "Cyan", "Magenta", "Oscuro", "Claro", "Brillante", "Opaco", "Neón", "Pastel", "Matizado", "Sólido", "Transparente", "Opaco", "Carmesí", "Escarlata", "Grisáceo", "Azulado", "Verdoso", "Amarillento", "Anaranjado"]
+            },
+            selectedCategory: 'general',
+            impostorCount: 1,
+            secretWord: null,
+            playerRoles: [],
+            votes: {},
+            timeLeft: 120,
+            timerRunning: false,
+            timerInterval: null
         };
-
-        room.players.push(player);
-        room.host = socket.id;
-        socket.join(room.code);
-        currentRoom = room.code;
-
+        
+        rooms.set(code, room);
+        socket.join(code);
+        socket.roomCode = code;
+        
         socket.emit('room-joined', {
             code: room.code,
             players: room.players.map(p => ({ id: p.id, name: p.name, isHost: p.id === room.host })),
@@ -133,10 +151,14 @@ io.on('connection', (socket) => {
             name: p.name, 
             isHost: p.id === room.host 
         })));
+        
+        console.log(`Room created: ${code} by ${playerName}`);
     });
 
     // Join room
     socket.on('join-room', ({ code, name }) => {
+        console.log(`Join room request from ${socket.id}, code: ${code}, name: ${name}`);
+        
         const room = rooms.get(code.toUpperCase());
         
         if (!room) {
@@ -154,7 +176,7 @@ io.on('connection', (socket) => {
             return;
         }
 
-        playerName = name.trim();
+        const playerName = name.trim();
         if (!playerName) {
             socket.emit('error', 'Nombre inválido');
             return;
@@ -176,7 +198,7 @@ io.on('connection', (socket) => {
 
         room.players.push(player);
         socket.join(room.code);
-        currentRoom = room.code;
+        socket.roomCode = room.code;
 
         socket.emit('room-joined', {
             code: room.code,
@@ -194,7 +216,7 @@ io.on('connection', (socket) => {
 
     // Update settings (host only)
     socket.on('update-settings', ({ category, impostorCount }) => {
-        const room = rooms.get(currentRoom);
+        const room = rooms.get(socket.roomCode);
         if (!room || room.host !== socket.id) return;
 
         if (category) room.selectedCategory = category;
@@ -208,7 +230,7 @@ io.on('connection', (socket) => {
 
     // Start game (host only)
     socket.on('start-game', () => {
-        const room = rooms.get(currentRoom);
+        const room = rooms.get(socket.roomCode);
         if (!room || room.host !== socket.id) return;
         if (room.players.length < 3) {
             socket.emit('error', 'Se necesitan al menos 3 jugadores');
@@ -265,7 +287,7 @@ io.on('connection', (socket) => {
 
     // Player revealed their role
     socket.on('role-revealed', () => {
-        const room = rooms.get(currentRoom);
+        const room = rooms.get(socket.roomCode);
         if (!room) return;
 
         const player = room.players.find(p => p.id === socket.id);
@@ -314,7 +336,7 @@ io.on('connection', (socket) => {
 
     // Cast vote
     socket.on('cast-vote', (playerName) => {
-        const room = rooms.get(currentRoom);
+        const room = rooms.get(socket.roomCode);
         if (!room || room.gameState !== 'voting') return;
 
         const voter = room.players.find(p => p.id === socket.id);
@@ -362,7 +384,7 @@ io.on('connection', (socket) => {
 
     // Start voting phase (host only)
     socket.on('start-voting', () => {
-        const room = rooms.get(currentRoom);
+        const room = rooms.get(socket.roomCode);
         if (!room || room.host !== socket.id) return;
 
         room.gameState = 'voting';
@@ -376,7 +398,7 @@ io.on('connection', (socket) => {
 
     // Reset game (host only)
     socket.on('reset-game', () => {
-        const room = rooms.get(currentRoom);
+        const room = rooms.get(socket.roomCode);
         if (!room || room.host !== socket.id) return;
 
         room.gameState = 'lobby';
@@ -413,9 +435,9 @@ io.on('connection', (socket) => {
     });
 
     function handleDisconnect() {
-        if (!currentRoom) return;
+        if (!socket.roomCode) return;
         
-        const room = rooms.get(currentRoom);
+        const room = rooms.get(socket.roomCode);
         if (!room) return;
 
         const playerIndex = room.players.findIndex(p => p.id === socket.id);
@@ -434,7 +456,7 @@ io.on('connection', (socket) => {
             if (room.timerInterval) {
                 clearInterval(room.timerInterval);
             }
-            rooms.delete(currentRoom);
+            rooms.delete(socket.roomCode);
         } else {
             io.to(room.code).emit('players-updated', room.players.map(p => ({ 
                 id: p.id, 
@@ -443,9 +465,8 @@ io.on('connection', (socket) => {
             })));
         }
 
-        socket.leave(currentRoom);
-        currentRoom = null;
-        playerName = null;
+        socket.leave(socket.roomCode);
+        socket.roomCode = null;
     }
 });
 
