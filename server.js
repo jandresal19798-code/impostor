@@ -23,24 +23,10 @@ function generateRoomCode() {
     return crypto.randomBytes(3).toString('hex').toUpperCase();
 }
 
-// Serve static files
-app.use(express.static(path.join(__dirname, 'public')));
+// JSON parser
+app.use(express.json());
 
-// Routes
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-app.get('/game', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'game.html'));
-});
-
-// Health check
-app.get('/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-// Room code endpoint
+// API Routes (MUST be before static files)
 app.get('/api/new-room', (req, res) => {
     let code;
     do {
@@ -51,7 +37,7 @@ app.get('/api/new-room', (req, res) => {
         code,
         players: [],
         host: null,
-        gameState: 'lobby', // lobby, revealing, playing, voting, results
+        gameState: 'lobby',
         currentPlayer: 0,
         wordBank: {
             general: ["Pizza", "París", "iPhone", "Fútbol", "Elefante", "Netflix", "Guitarra", "Dinosaurio", "Chocolate", "Tiburón", "Espada", "Marte", "Cine", "Hamburguesa", "Avión", "Batman", "Zombi", "Minecraft", "Sushi", "Playa", "Robot", "Nube", "Fuego", "Hielo", "Luna", "Sol", "Estrella", "Teléfono", "Reloj", "Cerveza", "Gato", "Perro", "Pájaro", "Coche", "Casa", "Libro", "Agua", "Tierra", "Viento", "Música", "Danza"],
@@ -74,6 +60,19 @@ app.get('/api/new-room', (req, res) => {
     });
     
     res.json({ code });
+});
+
+// Health check
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Serve static files (after API routes)
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Fallback to index.html for SPA routing
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Socket.io connection handling
