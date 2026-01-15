@@ -6,9 +6,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕵️</text></svg>">
-    <title>🕵️ El Impostor</title>
+    <title>🕵️ El Impostor - Multijugador</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="/socket.io/socket.io.js"></script>
     <style>
         * { font-family: 'Inter', -apple-system, sans-serif; }
         
@@ -27,7 +28,6 @@
 
         .hidden { display: none !important; }
 
-        /* Main Card Container */
         .game-card {
             background: rgba(15, 20, 35, 0.95);
             backdrop-filter: blur(20px);
@@ -47,12 +47,7 @@
             left: 0;
             right: 0;
             height: 3px;
-            background: linear-gradient(90deg, 
-                transparent, 
-                #ef4444, 
-                #f97316, 
-                #ef4444, 
-                transparent);
+            background: linear-gradient(90deg, transparent, #ef4444, #f97316, #ef4444, transparent);
             background-size: 200% 100%;
             animation: gradient-shift 3s linear infinite;
         }
@@ -62,7 +57,6 @@
             100% { background-position: 200% 0%; }
         }
 
-        /* Neon Button Styles (uiverse inspired) */
         .neon-btn {
             position: relative;
             display: inline-flex;
@@ -81,9 +75,7 @@
             cursor: pointer;
             overflow: hidden;
             transition: all 0.3s ease;
-            box-shadow: 
-                0 4px 15px rgba(239, 68, 68, 0.3),
-                0 0 30px rgba(239, 68, 68, 0.1);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
         }
 
         .neon-btn::before {
@@ -93,12 +85,7 @@
             left: -50%;
             width: 200%;
             height: 200%;
-            background: linear-gradient(
-                45deg,
-                transparent,
-                rgba(255,255,255,0.1),
-                transparent
-            );
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
             transform: rotate(45deg);
             animation: shimmer 3s infinite;
         }
@@ -110,21 +97,15 @@
 
         .neon-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 
-                0 8px 25px rgba(239, 68, 68, 0.4),
-                0 0 50px rgba(239, 68, 68, 0.2);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
         }
 
-        .neon-btn:active {
-            transform: translateY(0) scale(0.98);
+        .neon-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
         }
 
-        .neon-btn span {
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Border Neon Button */
         .neon-border-btn {
             position: relative;
             padding: 1rem 2rem;
@@ -141,44 +122,12 @@
             transition: all 0.3s ease;
         }
 
-        .neon-border-btn::before,
-        .neon-border-btn::after {
-            content: '';
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background: #ef4444;
-            transition: all 0.3s ease;
-        }
-
-        .neon-border-btn::before {
-            top: -2px;
-            left: -2px;
-            border-radius: 50% 0 0 0;
-        }
-
-        .neon-border-btn::after {
-            bottom: -2px;
-            right: -2px;
-            border-radius: 0 0 50% 0;
-        }
-
         .neon-border-btn:hover {
             color: #fff;
             border-color: rgba(239, 68, 68, 0.5);
-            box-shadow: 
-                inset 0 0 20px rgba(239, 68, 68, 0.1),
-                0 0 20px rgba(239, 68, 68, 0.2);
+            box-shadow: inset 0 0 20px rgba(239, 68, 68, 0.1), 0 0 20px rgba(239, 68, 68, 0.2);
         }
 
-        .neon-border-btn:hover::before,
-        .neon-border-btn:hover::after {
-            width: calc(100% + 4px);
-            height: calc(100% + 4px);
-            border-radius: 0.5rem;
-        }
-
-        /* Category Buttons */
         .category-btn {
             position: relative;
             padding: 0.5rem 0.25rem;
@@ -192,25 +141,20 @@
             border-radius: 0.5rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            overflow: hidden;
         }
 
         .category-btn.active {
             color: #fff;
             background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
             border-color: transparent;
-            box-shadow: 
-                0 4px 15px rgba(239, 68, 68, 0.4),
-                0 0 30px rgba(239, 68, 68, 0.2);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
         }
 
         .category-btn:hover:not(.active) {
             color: #94a3b8;
             background: rgba(40, 45, 65, 0.9);
-            border-color: rgba(255,255,255,0.1);
         }
 
-        /* Animated Input (uiverse style) */
         .neon-input {
             position: relative;
             width: 100%;
@@ -234,51 +178,9 @@
 
         .neon-input input:focus {
             border-color: rgba(239, 68, 68, 0.5);
-            box-shadow: 
-                0 0 0 3px rgba(239, 68, 68, 0.1),
-                0 0 20px rgba(239, 68, 68, 0.1);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
         }
 
-        .neon-input::before {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            width: 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #ef4444, transparent);
-            transform: translateX(-50%);
-            transition: width 0.3s ease;
-        }
-
-        .neon-input:focus-within::before {
-            width: 80%;
-        }
-
-        /* Player Remove Button */
-        .remove-btn {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(30, 35, 50, 0.8);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 0.75rem;
-            color: #64748b;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .remove-btn:hover {
-            color: #ef4444;
-            background: rgba(239, 68, 68, 0.1);
-            border-color: rgba(239, 68, 68, 0.3);
-            box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
-        }
-
-        /* Impostor Count Buttons */
         .count-btn {
             width: 2.25rem;
             height: 2.25rem;
@@ -307,32 +209,11 @@
             border-color: rgba(255,255,255,0.2);
         }
 
-        /* Word Reveal Card */
         .word-card {
             background: linear-gradient(145deg, rgba(15, 20, 35, 0.9) 0%, rgba(25, 30, 50, 0.9) 100%);
             border: 2px solid rgba(239, 68, 68, 0.2);
             border-radius: 1.5rem;
-            box-shadow: 
-                0 0 30px rgba(239, 68, 68, 0.1),
-                inset 0 0 30px rgba(0, 0, 0, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .word-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(239, 68, 68, 0.1) 0%, transparent 50%);
-            animation: pulse-rotate 4s linear infinite;
-        }
-
-        @keyframes pulse-rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.1), inset 0 0 30px rgba(0, 0, 0, 0.3);
         }
 
         .word-card.impostor {
@@ -345,14 +226,12 @@
             50% { box-shadow: 0 0 50px rgba(239, 68, 68, 0.4); }
         }
 
-        /* Floating Animation */
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-10px); }
         }
         .animate-float { animation: float 3s ease-in-out infinite; }
 
-        /* Timer Progress */
         .timer-progress {
             background: linear-gradient(90deg, #ef4444 0%, #f97316 50%, #ef4444 100%);
             background-size: 200% 100%;
@@ -364,8 +243,16 @@
             100% { background-position: 200% 0%; }
         }
 
-        /* Voting Card */
-        .vote-card {
+        .player-badge {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .player-card {
             background: linear-gradient(135deg, rgba(30, 35, 55, 0.8) 0%, rgba(20, 25, 40, 0.8) 100%);
             border: 1px solid rgba(255,255,255,0.08);
             border-radius: 0.75rem;
@@ -373,38 +260,56 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
         }
 
-        .vote-card:hover {
-            background: linear-gradient(135deg, rgba(50, 55, 80, 0.9) 0%, rgba(35, 45, 65, 0.9) 100%);
-            border-color: rgba(239, 68, 68, 0.3);
-            transform: translateX(4px);
-        }
-
-        .vote-card.voted {
+        .player-card.voted {
             background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 101, 52, 0.2) 100%);
             border-color: rgba(34, 197, 94, 0.3);
         }
 
-        .vote-card .voted-badge {
-            background: rgba(34, 197, 94, 0.2);
-            color: #22c55e;
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.375rem;
-            font-size: 0.75rem;
-            font-weight: 600;
+        .room-code {
+            font-family: monospace;
+            letter-spacing: 0.2em;
+            background: rgba(239, 68, 68, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ef4444;
         }
 
-        /* Result Card */
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 2rem;
+            font-size: 0.75rem;
+        }
+
         .result-card {
             background: linear-gradient(145deg, rgba(25, 30, 50, 0.95) 0%, rgba(15, 20, 35, 0.95) 100%);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 1rem;
         }
 
-        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -416,36 +321,88 @@
             background: rgba(239, 68, 68, 0.3);
             border-radius: 3px;
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(239, 68, 68, 0.5);
-        }
-
-        /* Player name display */
-        .player-name {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            animation: name-glow 2s ease-in-out infinite;
-        }
-
-        @keyframes name-glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.1); }
-            50% { box-shadow: 0 0 40px rgba(239, 68, 68, 0.2); }
-        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
+    <div id="connection-status" class="connection-status hidden">
+        <div class="status-dot"></div>
+        <span id="status-text">Conectado</span>
+    </div>
+    
     <div id="confetti-container" class="fixed inset-0 pointer-events-none z-50 overflow-hidden"></div>
     
     <div class="game-card w-full max-w-md p-8 relative">
         
-        <!-- Pantalla de Inicio -->
-        <div id="screen-setup" class="space-y-6">
+        <!-- Pantalla de Conexión -->
+        <div id="screen-connect" class="space-y-6">
             <div class="text-center">
                 <div class="inline-block animate-float mb-4">
                     <span class="text-6xl">🕵️</span>
                 </div>
                 <h1 class="text-4xl font-black tracking-tight text-white mb-2">IMPOSTOR</h1>
-                <p class="text-slate-400 text-sm">Descubre al impostor entre nosotros</p>
+                <p class="text-slate-400 text-sm">Multijugador en tiempo real</p>
+            </div>
+
+            <div class="bg-slate-900/50 p-6 rounded-xl space-y-4">
+                <div class="text-center">
+                    <p class="text-slate-400 text-xs uppercase tracking-widest mb-2">TU NOMBRE</p>
+                    <div class="neon-input">
+                        <input type="text" id="player-name" placeholder="Ingresa tu nombre" maxlength="15">
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <button onclick="showJoinScreen()" class="neon-btn w-full py-4">
+                    <span>🔗 UNIRSE A SALA</span>
+                </button>
+                <button onclick="showCreateScreen()" class="neon-border-btn w-full py-4">
+                    🏠 CREAR NUEVA SALA
+                </button>
+            </div>
+
+            <div class="text-center pt-4 border-t border-slate-800">
+                <a href="/" class="text-slate-500 text-sm hover:text-slate-300">← Volver al inicio</a>
+            </div>
+        </div>
+
+        <!-- Pantalla de Unirse -->
+        <div id="screen-join" class="hidden space-y-6">
+            <div class="text-center">
+                <div class="inline-block animate-float mb-4">
+                    <span class="text-6xl">🔗</span>
+                </div>
+                <h1 class="text-2xl font-black tracking-tight text-white mb-2">UNIRSE A SALA</h1>
+                <p class="text-slate-400 text-sm">Ingresa el código de sala</p>
+            </div>
+
+            <div class="bg-slate-900/50 p-6 rounded-xl space-y-4">
+                <div class="text-center">
+                    <p class="text-slate-400 text-xs uppercase tracking-widest mb-2">CÓDIGO DE SALA</p>
+                    <div class="neon-input">
+                        <input type="text" id="room-code-input" placeholder="Ej: ABC123" maxlength="6" style="text-transform: uppercase; text-align: center; font-size: 1.5rem; letter-spacing: 0.3em;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <button onclick="joinRoom()" class="neon-btn w-full py-4">
+                    <span>✅ UNIRSE</span>
+                </button>
+                <button onclick="showConnectScreen()" class="neon-border-btn w-full py-3">
+                    ← VOLVER
+                </button>
+            </div>
+        </div>
+
+        <!-- Pantalla de Crear Sala -->
+        <div id="screen-create" class="hidden space-y-6">
+            <div class="text-center">
+                <div class="inline-block animate-float mb-4">
+                    <span class="text-6xl">🏠</span>
+                </div>
+                <h1 class="text-2xl font-black tracking-tight text-white mb-2">CREAR SALA</h1>
+                <p class="text-slate-400 text-sm">Compartí el código con tus amigos</p>
             </div>
 
             <div class="grid grid-cols-4 gap-2 p-1.5 bg-slate-900/50 rounded-xl">
@@ -457,18 +414,6 @@
                 <button onclick="selectCategory('deportes')" id="cat-deportes" class="category-btn">DEPORTES</button>
                 <button onclick="selectCategory('animales')" id="cat-animales" class="category-btn">ANIMALES</button>
                 <button onclick="selectCategory('colores')" id="cat-colores" class="category-btn">COLORES</button>
-            </div>
-
-            <div id="names-container" class="space-y-3 max-h-52 overflow-y-auto pr-2">
-            </div>
-
-            <div class="flex gap-2">
-                <button onclick="addPlayerInput()" class="neon-border-btn flex-1">
-                    + AGREGAR JUGADOR
-                </button>
-                <button onclick="removeLastPlayer()" class="neon-border-btn px-4">
-                    −
-                </button>
             </div>
 
             <div class="bg-slate-900/50 p-4 rounded-xl">
@@ -483,36 +428,61 @@
                 </div>
             </div>
 
-            <button onclick="initGame()" class="neon-btn w-full py-4 text-lg">
-                <span>🎮 COMENZAR</span>
+            <button onclick="createRoom()" class="neon-btn w-full py-4">
+                <span>🎮 CREAR SALA</span>
+            </button>
+            <button onclick="showConnectScreen()" class="neon-border-btn w-full py-3">
+                ← VOLVER
             </button>
         </div>
 
-        <!-- Pantalla de Transición -->
-        <div id="screen-transition" class="hidden text-center space-y-6 py-8">
+        <!-- Pantalla de Lobby -->
+        <div id="screen-lobby" class="hidden space-y-6">
+            <div class="text-center">
+                <div class="inline-block animate-float mb-2">
+                    <span class="text-6xl">🕵️</span>
+                </div>
+                <p class="text-slate-400 uppercase tracking-widest text-xs font-bold">Código de sala</p>
+                <div id="room-code-display" class="room-code mx-auto mt-2">---</div>
+            </div>
+
+            <div class="bg-slate-900/50 p-4 rounded-xl">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs text-slate-400 font-medium uppercase tracking-wider">JUGADORES</span>
+                    <span id="player-count" class="text-xs text-slate-500">0/12</span>
+                </div>
+                <div id="players-list" class="space-y-2 max-h-48 overflow-y-auto">
+                </div>
+            </div>
+
+            <button id="btn-start-game" onclick="startGame()" class="neon-btn w-full py-4">
+                <span>🚀 COMENZAR JUEGO</span>
+            </button>
+            <button onclick="leaveRoom()" class="neon-border-btn w-full py-3 text-slate-400">
+                ← SALIR DE LA SALA
+            </button>
+        </div>
+
+        <!-- Pantalla de Espera de Turno -->
+        <div id="screen-waiting" class="hidden text-center space-y-6 py-8">
             <div class="space-y-4">
                 <div class="w-20 h-20 mx-auto rounded-full bg-slate-900/50 flex items-center justify-center border border-red-500/20">
-                    <span class="text-4xl">📱</span>
+                    <span class="text-4xl animate-float">⏳</span>
                 </div>
-                <p class="text-slate-500 uppercase tracking-widest text-xs font-bold">Pasá el teléfono a</p>
-                <div id="current-player-name" class="player-name text-4xl font-black text-white px-4 py-6 rounded-2xl animate-float">
-                    NOMBRE
-                </div>
-                <p id="player-counter" class="text-slate-500 text-sm">Jugador 1 de 5</p>
+                <p class="text-slate-400 uppercase tracking-widest text-xs font-bold">Esperando...</p>
+                <p id="waiting-message" class="text-white">Otro jugador está viendo su rol</p>
             </div>
-            <button onclick="revealRole()" class="neon-btn w-full py-4">
-                <span>👁️ VER MI ROL</span>
-            </button>
+            <p class="text-slate-500 text-sm">Código de sala: <span id="waiting-room-code" class="room-code text-lg py-1 px-2"></span></p>
         </div>
 
         <!-- Pantalla de Revelación -->
         <div id="screen-reveal" class="hidden text-center space-y-6 py-8">
             <p class="text-red-500 font-bold uppercase tracking-widest text-xs">Tu palabra es</p>
-            <div id="secret-word" class="word-card text-3xl font-black text-white py-16 px-4 relative">
+            <div id="secret-word" class="word-card text-3xl font-black text-white py-16 px-4">
                 ---
             </div>
             <div id="role-indicator" class="hidden px-4 py-2 rounded-lg font-bold text-sm"></div>
-            <button onclick="nextStep()" class="neon-btn w-full py-4">
+            <button onclick="confirmReveal()" class="neon-btn w-full py-4">
                 <span>✅ YA LA VI</span>
             </button>
         </div>
@@ -530,7 +500,7 @@
                 <p class="flex items-start gap-2"><span class="text-red-500">•</span> ¡Encontrá al mentiroso!</p>
             </div>
 
-            <div class="bg-slate-900/50 p-4 rounded-xl space-y-3">
+            <div id="host-controls" class="hidden bg-slate-900/50 p-4 rounded-xl space-y-3">
                 <div class="flex justify-between items-center">
                     <span class="text-xs text-slate-400 uppercase tracking-wider">TIEMPO</span>
                     <span id="timer-display" class="text-2xl font-black text-red-500">2:00</span>
@@ -538,18 +508,13 @@
                 <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
                     <div id="timer-bar" class="h-full timer-progress rounded-full" style="width: 100%"></div>
                 </div>
-                <button onclick="toggleTimer()" id="timer-btn" class="w-full py-2 rounded-lg bg-slate-800 text-white text-sm font-bold hover:bg-slate-700 transition">
-                    ⏸️ PAUSAR
+                <button onclick="startVoting()" class="neon-btn w-full py-3 text-sm">
+                    🗳️ IR A VOTACIÓN
                 </button>
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
-                <button onclick="startVoting()" class="neon-btn py-3 text-sm">
-                    🗳️ VOTAR
-                </button>
-                <button onclick="resetGame()" class="neon-border-btn py-3 text-sm">
-                    🔄 NUEVA PARTIDA
-                </button>
+            <div id="player-controls" class="hidden">
+                <p class="text-slate-400 text-sm">Esperando al host...</p>
             </div>
         </div>
 
@@ -559,9 +524,7 @@
             <p class="text-slate-500 text-xs">Tocá para votar</p>
             <div id="voting-players" class="space-y-2 max-h-64 overflow-y-auto">
             </div>
-            <button onclick="backToGame()" class="neon-border-btn w-full py-3">
-                VOLVER AL JUEGO
-            </button>
+            <p class="text-slate-500 text-sm">Código de sala: <span id="voting-room-code" class="room-code text-lg py-1 px-2"></span></p>
         </div>
 
         <!-- Pantalla de Resultados -->
@@ -573,279 +536,260 @@
             <button onclick="resetGame()" class="neon-btn w-full py-4">
                 <span>🔄 JUGAR DE NUEVO</span>
             </button>
+            <button onclick="leaveRoom()" class="neon-border-btn w-full py-3 text-slate-400">
+                SALIR DE LA SALA
+            </button>
         </div>
 
     </div>
 
     <script>
-        const wordBank = {
-            general: ["Pizza", "París", "iPhone", "Fútbol", "Elefante", "Netflix", "Guitarra", "Dinosaurio", "Chocolate", "Tiburón", "Espada", "Marte", "Cine", "Hamburguesa", "Avión", "Batman", "Zombi", "Minecraft", "Sushi", "Playa", "Robot", "Nube", "Fuego", "Hielo", "Luna", "Sol", "Estrella", "Teléfono", "Reloj", "Cerveza", "Gato", "Perro", "Pájaro", "Coche", "Casa", "Libro", "Agua", "Tierra", "Viento", "Música", "Danza"],
-            peliculas: ["Matrix", "Titanic", "Avatar", "Gladiador", "Frozen", "Toy Story", "Jurassic Park", "El Rey León", "Volver al Futuro", "Star Wars", "Harry Potter", "El Señor de los Anillos", "Spider-Man", "Iron Man", "Batman", "Terminator", "Alien", "Depredador", "Jaws", "Psicosis", "Inception", "Interstellar", "Coco", "Encanto", "Moana", "Buscando a Nemo", "Los Increíbles", "Shrek", "Mi Villano Favorito", "Minions", "Piratas del Caribe", "El Mago de Oz", "E.T.", "Tibbie", "Forrest Gump", "Pulp Fiction"],
-            paises: ["España", "Francia", "Italia", "Alemania", "Japón", "Brasil", "Argentina", "México", "Canadá", "Estados Unidos", "China", "India", "Australia", "Egipto", "Grecia", "Rusia", "Inglaterra", "Portugal", "Colombia", "Perú", "Chile", "Uruguay", "Venezuela", "Cuba", "Corea", "Tailandia", "Vietnam", "Marruecos", "Turquía", "Noruega", "Suecia", "Finlandia", "Dinamarca", "Holanda", "Bélgica", "Suiza", "Austria", "Irlanda", "Escocia"],
-            comida: ["Tacos", "Paella", "Sushi", "Pizza", "Hamburguesa", "Lasaña", "Curry", "Ramen", "Ceviche", "Empanadas", "Churrasco", "Milanesa", "Feijoada", "Bandeja Paisa", "Arepa", "Patacón", "Causa", "Anticuchos", "Chicha", "Pisco Sour", "Guisado", "Tamales", "Pupusas", "Chimichanga", "Enchiladas", "Tostada", "Gordita", "Quesadilla", "Burrito", "Taco", "Pasta", "Risotto", "Paella", "Tortilla", "Croissant", "Bagel", "Donut", "Cupcake", "Brownie"],
-            tecnologia: ["Computadora", "Internet", "Inteligencia Artificial", "Robot", "Aplicación", "Videojuego", "Redes Sociales", "Smartphone", "Tablet", "Wifi", "Bluetooth", "Nube", "Big Data", "Ciberseguridad", "Blockchain", "Criptomoneda", "Realidad Virtual", "Realidad Aumentada", "Drone", "Impresora 3D", "GPS", "Sensor", "Pantalla Táctil", "Procesador", "Memoria", "Disco Duro", "Batería", "Cargador", "Cable", "Auriculares", "Teclado", "Mouse", "Cámara", "Micrófono", "Altavoz", "Router", "Módem", "Servidor", "Base de Datos"],
-            deportes: ["Fútbol", "Baloncesto", "Tenis", "Natación", "Atletismo", "Béisbol", "Fútbol Americano", "Voleibol", "Boxeo", "Artes Marciales", "Gimnasia", "Ciclismo", "Esquí", "Surf", "Escalada", "Golf", "Hockey", "Rugby", "Críquet", "Ping Pong", "Bádminton", "Patinaje", "Lucha", "Carrera", "Maratón", "Triatlón", "Equitación", "Tiro", "Arquería", "Lacrosse", "Handball", "Waterpolo", "Remo", "Piragüismo", "Snowboard", "Skateboard", "BMX", "Wrestling"],
-            animales: ["León", "Tigre", "Elefante", "Jirafa", "Mono", "Conejo", "Perro", "Gato", "Pájaro", "Pez", "Delfín", "Ballena", "Tiburón", "Serpiente", "Lagarto", "Rana", "Tortuga", "Cocodrilo", "Hipopótamo", "Rinoceronte", "Zebra", "Caballo", "Vaca", "Cerdo", "Oveja", "Gallo", "Pato", "Águila", "Búho", "Murciélago", "Lobo", "Zorro", "Oso", "Panda", "Koala", "Canguro", "Pingüino", "Foca", "Ballena", "Pulpo"],
-            colores: ["Rojo", "Azul", "Verde", "Amarillo", "Naranja", "Morado", "Rosa", "Negro", "Blanco", "Gris", "Marrón", "Beige", "Celeste", "Turquesa", "Violeta", "Lila", "Dorado", "Plateado", "Cyan", "Magenta", "Oscuro", "Claro", "Brillante", "Opaco", "Neón", "Pastel", "Matizado", "Sólido", "Transparente", "Opaco", "Carmesí", "Escarlata", "Grisáceo", "Azulado", "Verdoso", "Amarillento", "Anaranjado"]
-        };
-
-        let playerNames = [];
-        let playerRoles = [];
-        let currentIndex = 0;
-        let impostorCount = 1;
+        const socket = io();
+        
+        let playerName = '';
+        let isHost = false;
         let selectedCategory = 'general';
-        let timerInterval = null;
-        let timeLeft = 120;
-        let timerRunning = false;
-        let votes = {};
-        let votedPlayers = new Set();
+        let impostorCount = 1;
+        let myRole = null;
+        let playersList = [];
 
-        window.onload = () => {
-            for(let i=0; i<4; i++) addPlayerInput();
-        };
+        // Connection status
+        socket.on('connect', () => {
+            document.getElementById('connection-status').classList.remove('hidden');
+            document.getElementById('status-text').textContent = 'Conectado';
+        });
 
-        function addPlayerInput() {
-            const container = document.getElementById('names-container');
-            const div = document.createElement('div');
-            div.className = "flex gap-2";
-            div.innerHTML = `
-                <div class="neon-input flex-1">
-                    <input type="text" placeholder="Nombre del jugador..." class="player-input">
-                </div>
-                <button onclick="removePlayer(this)" class="remove-btn">✕</button>
-            `;
-            container.appendChild(div);
-            container.scrollTop = container.scrollHeight;
-        }
+        socket.on('disconnect', () => {
+            document.getElementById('status-text').textContent = 'Desconectado';
+        });
 
-        function removePlayer(btn) {
-            const container = document.getElementById('names-container');
-            if (container.children.length > 1) {
-                btn.parentElement.remove();
-            }
-        }
-
-        function removeLastPlayer() {
-            const container = document.getElementById('names-container');
-            if (container.children.length > 1) {
-                container.removeChild(container.lastChild);
-            }
-        }
-
-        function selectCategory(cat) {
-            selectedCategory = cat;
-            document.querySelectorAll('.category-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.getElementById(`cat-${cat}`).classList.add('active');
-        }
-
-        function setImpostorCount(count) {
-            impostorCount = count;
-            document.querySelectorAll('.count-btn').forEach((btn, idx) => {
-                if (idx + 1 === count) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            });
-        }
-
-        function initGame() {
-            const inputs = document.querySelectorAll('.player-input');
-            playerNames = Array.from(inputs).map(i => i.value.trim()).filter(n => n !== "");
-
-            if (playerNames.length < 3) {
-                showNotification("Se necesitan al menos 3 jugadores");
-                return;
-            }
-            if (playerNames.length > 12) {
-                showNotification("Máximo 12 jugadores permitidos");
-                return;
-            }
-
-            const words = wordBank[selectedCategory];
-            const secretWord = words[Math.floor(Math.random() * words.length)];
-            playerRoles = new Array(playerNames.length).fill(secretWord);
-            
-            let impostors = new Set();
-            while(impostors.size < impostorCount) {
-                impostors.add(Math.floor(Math.random() * playerNames.length));
-            }
-            
-            impostors.forEach(idx => {
-                playerRoles[idx] = { word: "IMPOSTOR 🕵️", isImpostor: true };
-            });
-
-            currentIndex = 0;
-            votes = {};
-            votedPlayers = new Set();
-            playerNames.forEach(name => votes[name] = 0);
-            
-            stopTimer();
-            timeLeft = 120;
-            updateTimerDisplay();
-            
-            showScreen('screen-transition');
-            updateTransitionScreen();
-        }
-
-        function updateTransitionScreen() {
-            document.getElementById('current-player-name').innerText = playerNames[currentIndex].toUpperCase();
-            document.getElementById('player-counter').innerText = `Jugador ${currentIndex + 1} de ${playerNames.length}`;
-        }
-
-        function revealRole() {
-            const display = document.getElementById('secret-word');
-            const role = playerRoles[currentIndex];
-            const indicator = document.getElementById('role-indicator');
-            
-            if (typeof role === 'object' && role.isImpostor) {
-                display.innerText = "🕵️ IMPOSTOR 🕵️";
-                display.classList.add('impostor');
-                indicator.classList.remove('hidden');
-                indicator.className = "px-4 py-2 rounded-lg font-bold text-sm bg-red-600 text-white";
-                indicator.innerText = "¡No tienes palabra! Debes adivinar.";
-            } else {
-                display.innerText = role;
-                display.classList.remove('impostor');
-                indicator.classList.remove('hidden');
-                indicator.className = "px-4 py-2 rounded-lg font-bold text-sm bg-green-600 text-white";
-                indicator.innerText = "¡No reveles tu palabra!";
-            }
-            
-            showScreen('screen-reveal');
-        }
-
-        function nextStep() {
-            document.getElementById('secret-word').classList.remove('impostor');
-            currentIndex++;
-            if (currentIndex < playerNames.length) {
-                updateTransitionScreen();
-                showScreen('screen-transition');
-            } else {
-                showScreen('screen-playing');
-                startTimer();
-            }
-        }
-
+        // Screen management
         function showScreen(id) {
-            ['screen-setup', 'screen-transition', 'screen-reveal', 'screen-playing', 'screen-voting', 'screen-results'].forEach(s => {
+            ['screen-connect', 'screen-join', 'screen-create', 'screen-lobby', 'screen-waiting', 'screen-reveal', 'screen-playing', 'screen-voting', 'screen-results'].forEach(s => {
                 document.getElementById(s).classList.add('hidden');
             });
             document.getElementById(id).classList.remove('hidden');
         }
 
-        function showNotification(msg) {
-            const div = document.createElement('div');
-            div.className = "fixed inset-0 flex items-center justify-center z-50 pointer-events-none";
-            div.innerHTML = `<div class="bg-red-600 px-6 py-3 rounded-xl font-bold text-sm shadow-2xl animate-bounce">${msg}</div>`;
-            document.body.appendChild(div);
-            setTimeout(() => div.remove(), 2000);
-        }
+        function showConnectScreen() { showScreen('screen-connect'); }
+        function showJoinScreen() { showScreen('screen-join'); }
+        function showCreateScreen() { showScreen('screen-create'); }
 
-        // Timer functions
-        function startTimer() {
-            if (timerRunning) return;
-            timerRunning = true;
-            updateTimerBtn();
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                updateTimerDisplay();
-                if (timeLeft <= 0) {
-                    stopTimer();
-                    showNotification("¡Tiempo agotado!");
-                }
-            }, 1000);
-        }
-
-        function stopTimer() {
-            timerRunning = false;
-            if (timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-            }
-            updateTimerBtn();
-        }
-
-        function toggleTimer() {
-            if (timerRunning) {
-                stopTimer();
-            } else {
-                startTimer();
-            }
-        }
-
-        function updateTimerDisplay() {
-            const mins = Math.floor(timeLeft / 60);
-            const secs = timeLeft % 60;
-            document.getElementById('timer-display').innerText = `${mins}:${secs.toString().padStart(2, '0')}`;
-            document.getElementById('timer-bar').style.width = `${(timeLeft / 120) * 100}%`;
-        }
-
-        function updateTimerBtn() {
-            const btn = document.getElementById('timer-btn');
-            btn.innerText = timerRunning ? '⏸️ PAUSAR' : '▶️ CONTINUAR';
-        }
-
-        // Voting functions
-        function startVoting() {
-            stopTimer();
-            showScreen('screen-voting');
-            renderVotingPlayers();
-        }
-
-        function renderVotingPlayers() {
-            const container = document.getElementById('voting-players');
-            container.innerHTML = '';
+        // Category selection
+        function selectCategory(cat) {
+            selectedCategory = cat;
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`cat-${cat}`).classList.add('active');
             
-            playerNames.forEach(name => {
-                const div = document.createElement('div');
-                const hasVoted = votedPlayers.has(name);
-                div.className = `vote-card ${hasVoted ? 'voted' : ''}`;
-                div.innerHTML = `
-                    <span class="font-bold">${name}</span>
-                    <span class="voted-badge">${votes[name]} votos</span>
-                `;
-                div.onclick = () => castVote(name);
-                container.appendChild(div);
-            });
+            if (isHost && playersList.length > 0) {
+                socket.emit('update-settings', { category: cat });
+            }
         }
 
-        function castVote(forName) {
-            const currentPlayer = playerNames[currentIndex];
-            if (votedPlayers.has(currentPlayer)) {
-                showNotification("¡Ya votaste!");
+        function setImpostorCount(count) {
+            impostorCount = count;
+            document.querySelectorAll('.count-btn').forEach((btn, idx) => {
+                btn.classList.toggle('active', idx + 1 === count);
+            });
+            
+            if (isHost && playersList.length > 0) {
+                socket.emit('update-settings', { impostorCount: count });
+            }
+        }
+
+        // Join room
+        function joinRoom() {
+            const code = document.getElementById('room-code-input').value.trim().toUpperCase();
+            playerName = document.getElementById('player-name').value.trim();
+            
+            if (!playerName) {
+                showNotification('Ingresa tu nombre');
                 return;
             }
+            if (!code) {
+                showNotification('Ingresa el código de sala');
+                return;
+            }
+
+            socket.emit('join-room', { code, name: playerName });
+        }
+
+        // Create room
+        function createRoom() {
+            playerName = document.getElementById('player-name').value.trim();
             
-            votes[forName]++;
-            votedPlayers.add(currentPlayer);
-            renderVotingPlayers();
-            showNotification(`Voto registrado para ${forName}`);
+            if (!playerName) {
+                showNotification('Ingresa tu nombre');
+                return;
+            }
+
+            socket.emit('create-room', playerName);
         }
 
-        function backToGame() {
+        // Room joined
+        socket.on('room-joined', (data) => {
+            isHost = data.isHost;
+            playersList = data.players;
+            
+            document.getElementById('room-code-display').textContent = data.code;
+            document.getElementById('waiting-room-code').textContent = data.code;
+            document.getElementById('voting-room-code').textContent = data.code;
+            
+            updatePlayersList();
+            showScreen('screen-lobby');
+            
+            if (isHost) {
+                document.getElementById('btn-start-game').classList.remove('hidden');
+                socket.emit('update-settings', { 
+                    category: selectedCategory, 
+                    impostorCount: impostorCount 
+                });
+            } else {
+                document.getElementById('btn-start-game').classList.add('hidden');
+            }
+        });
+
+        // Players updated
+        socket.on('players-updated', (players) => {
+            playersList = players;
+            updatePlayersList();
+        });
+
+        function updatePlayersList() {
+            const container = document.getElementById('players-list');
+            container.innerHTML = playersList.map(p => `
+                <div class="player-card">
+                    <span class="font-bold">${p.name}${p.isHost ? ' 👑' : ''}</span>
+                    <span class="player-badge">${p.isHost ? 'HOST' : 'JUGADOR'}</span>
+                </div>
+            `).join('');
+            
+            document.getElementById('player-count').textContent = `${playersList.length}/12`;
+        }
+
+        // Error
+        socket.on('error', (msg) => {
+            showNotification(msg);
+        });
+
+        // Start game
+        function startGame() {
+            if (playersList.length < 3) {
+                showNotification('Se necesitan al menos 3 jugadores');
+                return;
+            }
+            socket.emit('start-game');
+        }
+
+        // Game started
+        socket.on('game-started', (data) => {
+            showScreen('screen-waiting');
+            document.getElementById('waiting-message').textContent = 
+                `Jugador ${data.currentPlayer + 1} de ${data.totalPlayers} está viendo su rol...`;
+        });
+
+        // Your role
+        socket.on('your-role', (data) => {
+            myRole = data.role;
+            const display = document.getElementById('secret-word');
+            const indicator = document.getElementById('role-indicator');
+            
+            if (myRole.isImpostor) {
+                display.innerText = '🕵️ IMPOSTOR 🕵️';
+                display.classList.add('impostor');
+                indicator.classList.remove('hidden');
+                indicator.className = 'px-4 py-2 rounded-lg font-bold text-sm bg-red-600 text-white';
+                indicator.innerText = '¡No tienes palabra! Debes adivinar.';
+            } else {
+                display.innerText = myRole.word;
+                display.classList.remove('impostor');
+                indicator.classList.remove('hidden');
+                indicator.className = 'px-4 py-2 rounded-lg font-bold text-sm bg-green-600 text-white';
+                indicator.innerText = '¡No reveles tu palabra!';
+            }
+            
+            showScreen('screen-reveal');
+        });
+
+        // Confirm reveal
+        function confirmReveal() {
+            document.getElementById('secret-word').classList.remove('impostor');
+            socket.emit('role-revealed');
+        }
+
+        // Next player
+        socket.on('next-player', (data) => {
+            showScreen('screen-waiting');
+            document.getElementById('waiting-message').textContent = 
+                `Jugador ${data.currentPlayer + 1} de ${data.totalPlayers} está viendo su rol...`;
+        });
+
+        // All revealed - start playing
+        socket.on('all-revealed', () => {
             showScreen('screen-playing');
-            startTimer();
+            updateGameControls();
+        });
+
+        // Timer update
+        socket.on('timer-update', (data) => {
+            const mins = Math.floor(data.timeLeft / 60);
+            const secs = data.timeLeft % 60;
+            document.getElementById('timer-display').innerText = `${mins}:${secs.toString().padStart(2, '0')}`;
+            document.getElementById('timer-bar').style.width = `${(data.timeLeft / 120) * 100}%`;
+        });
+
+        // Timer ended
+        socket.on('timer-ended', () => {
+            showNotification('¡Tiempo agotado!');
+        });
+
+        // Update game controls
+        function updateGameControls() {
+            if (isHost) {
+                document.getElementById('host-controls').classList.remove('hidden');
+                document.getElementById('player-controls').classList.add('hidden');
+            } else {
+                document.getElementById('host-controls').classList.add('hidden');
+                document.getElementById('player-controls').classList.remove('hidden');
+            }
         }
 
-        function showResults() {
-            stopTimer();
+        // Start voting
+        function startVoting() {
+            socket.emit('start-voting');
+        }
+
+        // Voting started
+        socket.on('voting-started', (data) => {
+            showScreen('screen-voting');
+            renderVotingPlayers(data.players, data.votes);
+        });
+
+        function renderVotingPlayers(players, votes) {
+            const container = document.getElementById('voting-players');
+            container.innerHTML = players.map(p => `
+                <div class="player-card ${p.hasVoted ? 'voted' : ''}" onclick="castVote('${p.name}')">
+                    <span class="font-bold">${p.name}</span>
+                    <span class="player-badge">${votes[p.name] || 0} votos</span>
+                </div>
+            `).join('');
+        }
+
+        // Cast vote
+        function castVote(playerName) {
+            socket.emit('cast-vote', playerName);
+        }
+
+        // Vote cast
+        socket.on('vote-cast', (data) => {
+            renderVotingPlayers(data.voters, data.votes);
+        });
+
+        // Game results
+        socket.on('game-results', (data) => {
             showScreen('screen-results');
             
-            let maxVotes = 0;
-            let eliminated = null;
-            Object.entries(votes).forEach(([name, count]) => {
-                if (count > maxVotes) {
-                    maxVotes = count;
-                    eliminated = name;
-                }
-            });
-            
-            const isImpostorEliminated = playerRoles[playerNames.indexOf(eliminated)]?.isImpostor;
-            
-            if (isImpostorEliminated) {
+            if (data.isImpostorEliminated) {
                 document.getElementById('result-emoji').innerText = '🎉';
                 document.getElementById('result-title').innerText = '¡GANARON LOS CIUDADANOS!';
                 document.getElementById('result-title').className = 'text-2xl font-black uppercase text-green-500';
@@ -856,23 +800,54 @@
                 document.getElementById('result-title').className = 'text-2xl font-black uppercase text-red-500';
             }
             
-            let content = `<p class="font-bold text-white">${eliminated} fue eliminado/a</p>`;
-            content += `<p class="text-slate-400 text-xs">Recibió ${maxVotes} votos</p>`;
+            let content = `<p class="font-bold text-white">${data.eliminated} fue eliminado/a</p>`;
+            content += `<p class="text-slate-400 text-xs">Recibió ${data.maxVotes} votos</p>`;
             
             content += `<p class="font-bold text-white mt-3">Impostores:</p>`;
-            playerRoles.forEach((role, idx) => {
-                if (role?.isImpostor) {
-                    content += `<p class="text-red-400 text-sm">👤 ${playerNames[idx]}</p>`;
-                }
+            data.impostors.forEach(name => {
+                content += `<p class="text-red-400 text-sm">👤 ${name}</p>`;
             });
             
             content += `<p class="font-bold text-white mt-3">Palabra secreta:</p>`;
-            const secretRoles = playerRoles.filter(r => typeof r === 'string');
-            content += `<p class="text-green-400 text-sm">${secretRoles[0] || 'N/A'}</p>`;
+            content += `<p class="text-green-400 text-sm">${data.secretWord}</p>`;
             
             document.getElementById('result-content').innerHTML = content;
+        });
+
+        // Reset game
+        function resetGame() {
+            socket.emit('reset-game');
         }
 
+        // Game reset
+        socket.on('game-reset', (data) => {
+            playersList = data.players;
+            updatePlayersList();
+            showScreen('screen-lobby');
+            
+            if (isHost) {
+                document.getElementById('btn-start-game').classList.remove('hidden');
+            } else {
+                document.getElementById('btn-start-game').classList.add('hidden');
+            }
+        });
+
+        // Leave room
+        function leaveRoom() {
+            socket.emit('leave-room');
+            showConnectScreen();
+        }
+
+        // Notifications
+        function showNotification(msg) {
+            const div = document.createElement('div');
+            div.className = "fixed inset-0 flex items-center justify-center z-50 pointer-events-none";
+            div.innerHTML = `<div class="bg-red-600 px-6 py-3 rounded-xl font-bold text-sm shadow-2xl animate-bounce">${msg}</div>`;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 2000);
+        }
+
+        // Confetti
         function launchConfetti() {
             const container = document.getElementById('confetti-container');
             container.innerHTML = '';
@@ -895,18 +870,6 @@
             }
             
             setTimeout(() => container.innerHTML = '', 4000);
-        }
-
-        function resetGame() {
-            stopTimer();
-            timeLeft = 120;
-            votedPlayers.clear();
-            updateTimerDisplay();
-            showScreen('screen-setup');
-            
-            const container = document.getElementById('names-container');
-            container.innerHTML = '';
-            for(let i=0; i<4; i++) addPlayerInput();
         }
     </script>
 </body>
