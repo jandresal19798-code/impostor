@@ -359,6 +359,9 @@
                 <button onclick="showCreateScreen()" class="neon-border-btn w-full py-4">
                     🏠 CREAR NUEVA SALA
                 </button>
+                <button onclick="showLocalScreen()" class="neon-border-btn w-full py-4" style="border-color: rgba(34, 197, 94, 0.3); color: #22c55e;">
+                    📱 JUEGO LOCAL
+                </button>
             </div>
 
             <div class="text-center pt-4 border-t border-slate-800">
@@ -463,6 +466,65 @@
             </button>
         </div>
 
+        <!-- Pantalla de Juego Local -->
+        <div id="screen-local" class="hidden space-y-6">
+            <div class="text-center">
+                <div class="inline-block animate-float mb-4">
+                    <span class="text-6xl">📱</span>
+                </div>
+                <h1 class="text-2xl font-black tracking-tight text-white mb-2">JUEGO LOCAL</h1>
+                <p class="text-slate-400 text-sm">Todos en el mismo dispositivo</p>
+            </div>
+
+            <div class="grid grid-cols-4 gap-2 p-1.5 bg-slate-900/50 rounded-xl">
+                <button onclick="selectLocalCategory('general')" id="cat-local-general" class="category-btn active">GENERAL</button>
+                <button onclick="selectLocalCategory('peliculas')" id="cat-local-peliculas" class="category-btn">PELÍCULAS</button>
+                <button onclick="selectLocalCategory('paises')" id="cat-local-paises" class="category-btn">PAÍSES</button>
+                <button onclick="selectLocalCategory('comida')" id="cat-local-comida" class="category-btn">COMIDA</button>
+                <button onclick="selectLocalCategory('tecnologia')" id="cat-local-tecnologia" class="category-btn">TECNO</button>
+                <button onclick="selectLocalCategory('deportes')" id="cat-local-deportes" class="category-btn">DEPORTES</button>
+                <button onclick="selectLocalCategory('animales')" id="cat-local-animales" class="category-btn">ANIMALES</button>
+                <button onclick="selectLocalCategory('colores')" id="cat-local-colores" class="category-btn">COLORES</button>
+            </div>
+
+            <div class="bg-slate-900/50 p-4 rounded-xl">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="text-xs text-slate-400 font-medium uppercase tracking-wider">JUGADORES</span>
+                    <div class="flex-1 h-px bg-slate-700"></div>
+                    <span id="local-player-count" class="text-xs text-slate-500">0/12</span>
+                </div>
+                <div id="local-names-container" class="space-y-2 max-h-48 overflow-y-auto">
+                </div>
+                <div class="flex gap-2 mt-3">
+                    <button onclick="addLocalPlayer()" class="flex-1 py-2 rounded-lg border border-dashed border-slate-600 text-slate-400 text-sm font-bold hover:bg-slate-800">
+                        + AGREGAR
+                    </button>
+                    <button onclick="removeLastLocalPlayer()" class="py-2 px-3 rounded-lg border border-dashed border-slate-600 text-slate-400 text-sm">
+                        −
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-slate-900/50 p-4 rounded-xl">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="text-xs text-slate-400 font-medium uppercase tracking-wider">IMPOSTORES</span>
+                    <div class="flex-1 h-px bg-slate-700"></div>
+                </div>
+                <div class="flex gap-2 justify-center" id="local-impostor-count">
+                    <button onclick="setLocalImpostorCount(1)" class="count-btn active">1</button>
+                    <button onclick="setLocalImpostorCount(2)" class="count-btn">2</button>
+                    <button onclick="setLocalImpostorCount(3)" class="count-btn">3</button>
+                </div>
+            </div>
+
+            <button onclick="startLocalGame()" class="neon-btn w-full py-4">
+                <span>🚀 COMENZAR JUEGO</span>
+            </button>
+            <button onclick="showConnectScreen()" class="neon-border-btn w-full py-3">
+                ← VOLVER
+            </button>
+        </div>
+
         <!-- Pantalla de Espera de Turno -->
         <div id="screen-waiting" class="hidden text-center space-y-6 py-8">
             <div class="space-y-4">
@@ -482,7 +544,7 @@
                 ---
             </div>
             <div id="role-indicator" class="hidden px-4 py-2 rounded-lg font-bold text-sm"></div>
-            <button onclick="confirmReveal()" class="neon-btn w-full py-4">
+            <button onclick="confirmLocalReveal()" class="neon-btn w-full py-4">
                 <span>✅ YA LA VI</span>
             </button>
         </div>
@@ -583,6 +645,140 @@
         function showConnectScreen() { showScreen('screen-connect'); }
         function showJoinScreen() { showScreen('screen-join'); }
         function showCreateScreen() { showScreen('screen-create'); }
+        function showLocalScreen() { 
+            showScreen('screen-local'); 
+            updateLocalPlayersList();
+        }
+
+        // Local game variables
+        let localPlayerNames = [];
+        let localImpostorCount = 1;
+        let localSelectedCategory = 'general';
+        let localPlayerRoles = [];
+        let localCurrentIndex = 0;
+
+        // Local category selection
+        function selectLocalCategory(cat) {
+            localSelectedCategory = cat;
+            document.querySelectorAll('#screen-local .category-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`cat-local-${cat}`).classList.add('active');
+        }
+
+        function setLocalImpostorCount(count) {
+            localImpostorCount = count;
+            document.querySelectorAll('#local-impostor-count .count-btn').forEach((btn, idx) => {
+                btn.classList.toggle('active', idx + 1 === count);
+            });
+        }
+
+        function addLocalPlayer() {
+            const container = document.getElementById('local-names-container');
+            const div = document.createElement('div');
+            div.className = "flex gap-2";
+            div.innerHTML = `
+                <div class="neon-input flex-1">
+                    <input type="text" placeholder="Nombre..." class="local-player-input" maxlength="15">
+                </div>
+                <button onclick="this.parentElement.remove(); updateLocalPlayersList();" class="remove-btn">✕</button>
+            `;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function removeLastLocalPlayer() {
+            const container = document.getElementById('local-names-container');
+            if (container.children.length > 0) {
+                container.removeChild(container.lastChild);
+            }
+            updateLocalPlayersList();
+        }
+
+        function updateLocalPlayersList() {
+            const inputs = document.querySelectorAll('.local-player-input');
+            localPlayerNames = Array.from(inputs).map(i => i.value.trim()).filter(n => n !== "");
+            document.getElementById('local-player-count').textContent = `${localPlayerNames.length}/12`;
+        }
+
+        function startLocalGame() {
+            updateLocalPlayersList();
+            
+            if (localPlayerNames.length < 3) {
+                showNotification('Se necesitan al menos 3 jugadores');
+                return;
+            }
+            if (localPlayerNames.length > 12) {
+                showNotification('Máximo 12 jugadores');
+                return;
+            }
+
+            const wordBank = {
+                general: ["Pizza", "París", "iPhone", "Fútbol", "Elefante", "Netflix", "Guitarra", "Dinosaurio", "Chocolate", "Tiburón", "Espada", "Marte", "Cine", "Hamburguesa", "Avión", "Batman", "Zombi", "Minecraft", "Sushi", "Playa", "Robot", "Nube", "Fuego", "Hielo", "Luna", "Sol", "Estrella", "Teléfono", "Reloj", "Cerveza", "Gato", "Perro", "Pájaro", "Coche", "Casa", "Libro", "Agua", "Tierra", "Viento", "Música", "Danza"],
+                peliculas: ["Matrix", "Titanic", "Avatar", "Gladiador", "Frozen", "Toy Story", "Jurassic Park", "El Rey León", "Volver al Futuro", "Star Wars", "Harry Potter", "El Señor de los Anillos", "Spider-Man", "Iron Man", "Batman", "Terminator", "Alien", "Depredador", "Jaws", "Psicosis", "Inception", "Interstellar", "Coco", "Encanto", "Moana", "Buscando a Nemo", "Los Increíbles", "Shrek", "Mi Villano Favorito", "Minions"],
+                paises: ["España", "Francia", "Italia", "Alemania", "Japón", "Brasil", "Argentina", "México", "Canadá", "Estados Unidos", "China", "India", "Australia", "Egipto", "Grecia", "Rusia", "Inglaterra", "Portugal", "Colombia", "Perú", "Chile", "Uruguay", "Venezuela", "Cuba", "Corea", "Tailandia", "Vietnam", "Marruecos", "Turquía"],
+                comida: ["Tacos", "Paella", "Sushi", "Pizza", "Hamburguesa", "Lasaña", "Curry", "Ramen", "Ceviche", "Empanadas", "Churrasco", "Milanesa", "Feijoada", "Bandeja Paisa", "Arepa", "Patacón", "Causa", "Anticuchos", "Chicha", "Pisco Sour", "Guisado", "Tamales", "Pupusas", "Chimichanga", "Enchiladas", "Tostada", "Gordita", "Quesadilla", "Burrito"],
+                tecnologia: ["Computadora", "Internet", "Inteligencia Artificial", "Robot", "Aplicación", "Videojuego", "Redes Sociales", "Smartphone", "Tablet", "Wifi", "Bluetooth", "Nube", "Big Data", "Ciberseguridad", "Blockchain", "Criptomoneda", "Realidad Virtual", "Realidad Aumentada", "Drone", "Impresora 3D"],
+                deportes: ["Fútbol", "Baloncesto", "Tenis", "Natación", "Atletismo", "Béisbol", "Fútbol Americano", "Voleibol", "Boxeo", "Artes Marciales", "Gimnasia", "Ciclismo", "Esquí", "Surf", "Escalada", "Golf", "Hockey", "Rugby", "Críquet", "Ping Pong"],
+                animales: ["León", "Tigre", "Elefante", "Jirafa", "Mono", "Conejo", "Perro", "Gato", "Pájaro", "Pez", "Delfín", "Ballena", "Tiburón", "Serpiente", "Lagarto", "Rana", "Tortuga", "Cocodrilo", "Hipopótamo", "Rinoceronte"],
+                colores: ["Rojo", "Azul", "Verde", "Amarillo", "Naranja", "Morado", "Rosa", "Negro", "Blanco", "Gris", "Marrón", "Beige", "Celeste", "Turquesa", "Violeta", "Lila", "Dorado", "Plateado", "Cyan", "Magenta"]
+            };
+
+            const words = wordBank[localSelectedCategory];
+            const secretWord = words[Math.floor(Math.random() * words.length)];
+            localPlayerRoles = new Array(localPlayerNames.length).fill(secretWord);
+            
+            let impostors = new Set();
+            while(impostors.size < localImpostorCount) {
+                impostors.add(Math.floor(Math.random() * localPlayerNames.length));
+            }
+            
+            impostors.forEach(idx => {
+                localPlayerRoles[idx] = { word: "IMPOSTOR", isImpostor: true };
+            });
+
+            localCurrentIndex = 0;
+            showLocalTransitionScreen();
+        }
+
+        function showLocalTransitionScreen() {
+            document.getElementById('waiting-message').textContent = `Pasá el teléfono a: ${localPlayerNames[localCurrentIndex].toUpperCase()}`;
+            document.getElementById('waiting-room-code').textContent = 'LOCAL';
+            showScreen('screen-waiting');
+        }
+
+        function confirmLocalReveal() {
+            const display = document.getElementById('secret-word');
+            const role = localPlayerRoles[localCurrentIndex];
+            const indicator = document.getElementById('role-indicator');
+            
+            if (role.isImpostor) {
+                display.innerText = '🕵️ IMPOSTOR 🕵️';
+                display.classList.add('impostor');
+                indicator.classList.remove('hidden');
+                indicator.className = 'px-4 py-2 rounded-lg font-bold text-sm bg-red-600 text-white';
+                indicator.innerText = '¡No tienes palabra!';
+            } else {
+                display.innerText = role.word;
+                display.classList.remove('impostor');
+                indicator.classList.remove('hidden');
+                indicator.className = 'px-4 py-2 rounded-lg font-bold text-sm bg-green-600 text-white';
+                indicator.innerText = '¡No reveles!';
+            }
+            
+            showScreen('screen-reveal');
+        }
+
+        function nextLocalStep() {
+            document.getElementById('secret-word').classList.remove('impostor');
+            localCurrentIndex++;
+            
+            if (localCurrentIndex < localPlayerNames.length) {
+                showLocalTransitionScreen();
+            } else {
+                showScreen('screen-playing');
+                document.getElementById('host-controls').classList.remove('hidden');
+                document.getElementById('player-controls').classList.add('hidden');
+            }
+        }
 
         // Category selection
         function selectCategory(cat) {
@@ -845,6 +1041,14 @@
                 document.getElementById('btn-start-game').classList.add('hidden');
             }
         });
+
+        // Initialize local game with some players
+        function initLocalGame() {
+            for(let i=0; i<4; i++) addLocalPlayer();
+        }
+        
+        // Add initial local players on page load
+        window.onload = initLocalGame;
 
         // Leave room
         function leaveRoom() {
