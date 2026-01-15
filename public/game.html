@@ -57,6 +57,7 @@
             100% { background-position: 200% 0%; }
         }
 
+        /* Neon Button with animated borders - uiverse style */
         .neon-btn {
             position: relative;
             display: inline-flex;
@@ -97,15 +98,14 @@
 
         .neon-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5), 0 0 30px rgba(239, 68, 68, 0.3);
         }
 
-        .neon-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
+        .neon-btn:active {
+            transform: translateY(0) scale(0.98);
         }
 
+        /* Cyber Border Button - uiverse.io inspired */
         .neon-border-btn {
             position: relative;
             padding: 1rem 2rem;
@@ -114,20 +114,46 @@
             text-transform: uppercase;
             letter-spacing: 0.1em;
             color: #94a3b8;
-            background: transparent;
-            border: 2px solid rgba(148, 163, 184, 0.3);
+            background: rgba(15, 20, 35, 0.8);
+            border: none;
             border-radius: 1rem;
             cursor: pointer;
-            overflow: hidden;
             transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .neon-border-btn::before,
+        .neon-border-btn::after {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #ef4444;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .neon-border-btn::before {
+            top: -2px;
+            left: -2px;
+        }
+
+        .neon-border-btn::after {
+            bottom: -2px;
+            right: -2px;
         }
 
         .neon-border-btn:hover {
             color: #fff;
-            border-color: rgba(239, 68, 68, 0.5);
-            box-shadow: inset 0 0 20px rgba(239, 68, 68, 0.1), 0 0 20px rgba(239, 68, 68, 0.2);
         }
 
+        .neon-border-btn:hover::before,
+        .neon-border-btn:hover::after {
+            width: calc(100% + 4px);
+            height: calc(100% + 4px);
+        }
+
+        /* Category Button with glow */
         .category-btn {
             position: relative;
             padding: 0.5rem 0.25rem;
@@ -147,14 +173,16 @@
             color: #fff;
             background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
             border-color: transparent;
-            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4), 0 0 20px rgba(239, 68, 68, 0.2);
         }
 
         .category-btn:hover:not(.active) {
             color: #94a3b8;
             background: rgba(40, 45, 65, 0.9);
+            border-color: rgba(239, 68, 68, 0.3);
         }
 
+        /* Animated Input - uiverse style */
         .neon-input {
             position: relative;
             width: 100%;
@@ -178,9 +206,26 @@
 
         .neon-input input:focus {
             border-color: rgba(239, 68, 68, 0.5);
-            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1), 0 0 20px rgba(239, 68, 68, 0.1);
         }
 
+        .neon-input::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ef4444, transparent);
+            transform: translateX(-50%);
+            transition: width 0.3s ease;
+        }
+
+        .neon-input:focus-within::after {
+            width: 80%;
+        }
+
+        /* Count Button with pulse */
         .count-btn {
             width: 2.25rem;
             height: 2.25rem;
@@ -202,6 +247,12 @@
             border-color: transparent;
             color: #fff;
             box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+            animation: pulse-btn 2s infinite;
+        }
+
+        @keyframes pulse-btn {
+            0%, 100% { box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
+            50% { box-shadow: 0 4px 25px rgba(239, 68, 68, 0.6); }
         }
 
         .count-btn:hover:not(.active) {
@@ -209,6 +260,7 @@
             border-color: rgba(255,255,255,0.2);
         }
 
+        /* Word Card with neon glow */
         .word-card {
             background: linear-gradient(145deg, rgba(15, 20, 35, 0.9) 0%, rgba(25, 30, 50, 0.9) 100%);
             border: 2px solid rgba(239, 68, 68, 0.2);
@@ -217,13 +269,17 @@
         }
 
         .word-card.impostor {
-            border-color: rgba(239, 68, 68, 0.5);
+            border-color: #ef4444;
             animation: impostor-glow 1.5s ease-in-out infinite;
         }
 
         @keyframes impostor-glow {
-            0%, 100% { box-shadow: 0 0 30px rgba(239, 68, 68, 0.2); }
-            50% { box-shadow: 0 0 50px rgba(239, 68, 68, 0.4); }
+            0%, 100% { 
+                box-shadow: 0 0 30px rgba(239, 68, 68, 0.2), 0 0 60px rgba(239, 68, 68, 0.1); 
+            }
+            50% { 
+                box-shadow: 0 0 50px rgba(239, 68, 68, 0.4), 0 0 100px rgba(239, 68, 68, 0.2); 
+            }
         }
 
         @keyframes float {
@@ -243,15 +299,7 @@
             100% { background-position: 200% 0%; }
         }
 
-        .player-badge {
-            background: rgba(239, 68, 68, 0.2);
-            color: #ef4444;
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.375rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
+        /* Player Card - uiverse inspired */
         .player-card {
             background: linear-gradient(135deg, rgba(30, 35, 55, 0.8) 0%, rgba(20, 25, 40, 0.8) 100%);
             border: 1px solid rgba(255,255,255,0.08);
@@ -260,15 +308,22 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .player-card:hover {
+            background: linear-gradient(135deg, rgba(50, 55, 80, 0.9) 0%, rgba(35, 45, 65, 0.9) 100%);
+            border-color: rgba(239, 68, 68, 0.3);
+            transform: translateX(4px);
         }
 
         .player-card.voted {
-            background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 101, 52, 0.2) 100%);
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(22, 101, 52, 0.15) 100%);
             border-color: rgba(34, 197, 94, 0.3);
         }
 
         .room-code {
-            font-family: monospace;
+            font-family: 'Courier New', monospace;
             letter-spacing: 0.2em;
             background: rgba(239, 68, 68, 0.2);
             padding: 0.5rem 1rem;
@@ -276,6 +331,7 @@
             font-size: 1.5rem;
             font-weight: 700;
             color: #ef4444;
+            text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
         }
 
         .status-dot {
@@ -283,33 +339,46 @@
             height: 8px;
             border-radius: 50%;
             background: #ef4444;
+            box-shadow: 0 0 10px #ef4444, 0 0 20px rgba(239, 68, 68, 0.5);
             animation: pulse-dot 2s infinite;
         }
 
         @keyframes pulse-dot {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.2); }
         }
 
-        .connection-status {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 2rem;
-            font-size: 0.75rem;
-        }
-
+        /* Result Card */
         .result-card {
             background: linear-gradient(145deg, rgba(25, 30, 50, 0.95) 0%, rgba(15, 20, 35, 0.95) 100%);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 1rem;
         }
 
+        /* Remove button with hover effect */
+        .remove-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(30, 35, 50, 0.8);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 0.75rem;
+            color: #64748b;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .remove-btn:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+        }
+
+        /* Scrollbar styling */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -318,17 +387,67 @@
             border-radius: 3px;
         }
         ::-webkit-scrollbar-thumb {
-            background: rgba(239, 68, 68, 0.3);
+            background: linear-gradient(180deg, #ef4444, #dc2626);
             border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #f97316, #ef4444);
+        }
+
+        /* Vote card hover effect */
+        .vote-card {
+            background: linear-gradient(135deg, rgba(30, 35, 55, 0.8) 0%, rgba(20, 25, 40, 0.8) 100%);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 0.75rem;
+            padding: 0.875rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .vote-card:hover {
+            background: linear-gradient(135deg, rgba(50, 55, 80, 0.9) 0%, rgba(35, 45, 65, 0.9) 100%);
+            border-color: rgba(239, 68, 68, 0.3);
+            transform: translateX(4px);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+        }
+
+        .vote-card.voted {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 101, 52, 0.2) 100%);
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
+        .vote-card .voted-badge {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Player name display with glow */
+        .player-name {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.05) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            animation: name-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes name-glow {
+            0%, 100% { 
+                box-shadow: 0 0 20px rgba(239, 68, 68, 0.1); 
+                border-color: rgba(239, 68, 68, 0.2);
+            }
+            50% { 
+                box-shadow: 0 0 40px rgba(239, 68, 68, 0.2); 
+                border-color: rgba(239, 68, 68, 0.4);
+            }
         }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
-    <div id="connection-status" class="connection-status hidden">
-        <div class="status-dot"></div>
-        <span id="status-text">Conectando...</span>
-    </div>
-    
     <div id="confetti-container" class="fixed inset-0 pointer-events-none z-50 overflow-hidden"></div>
     
     <div class="game-card w-full max-w-md p-8 relative">
@@ -359,7 +478,7 @@
                 <button onclick="showCreateScreen()" class="neon-border-btn w-full py-4">
                     🏠 CREAR NUEVA SALA
                 </button>
-                <button onclick="showLocalScreen()" class="neon-border-btn w-full py-4" style="border-color: rgba(34, 197, 94, 0.3); color: #22c55e;">
+                <button onclick="showLocalScreen()" class="neon-border-btn w-full py-4" style="color: #22c55e;">
                     📱 JUEGO LOCAL
                 </button>
             </div>
@@ -636,7 +755,7 @@
 
         // Screen management
         function showScreen(id) {
-            ['screen-connect', 'screen-join', 'screen-create', 'screen-lobby', 'screen-waiting', 'screen-reveal', 'screen-playing', 'screen-voting', 'screen-results'].forEach(s => {
+            ['screen-connect', 'screen-join', 'screen-create', 'screen-lobby', 'screen-local', 'screen-waiting', 'screen-reveal', 'screen-playing', 'screen-voting', 'screen-results'].forEach(s => {
                 document.getElementById(s).classList.add('hidden');
             });
             document.getElementById(id).classList.remove('hidden');
@@ -909,7 +1028,7 @@
                 display.classList.add('impostor');
                 indicator.classList.remove('hidden');
                 indicator.className = 'px-4 py-2 rounded-lg font-bold text-sm bg-red-600 text-white';
-                indicator.innerText = '¡No tienes palabra! Debes adivinar.';
+                indicator.innerText = '¡No tienes palabra!';
             } else {
                 display.innerText = myRole.word;
                 display.classList.remove('impostor');
@@ -978,9 +1097,9 @@
         function renderVotingPlayers(players, votes) {
             const container = document.getElementById('voting-players');
             container.innerHTML = players.map(p => `
-                <div class="player-card ${p.hasVoted ? 'voted' : ''}" onclick="castVote('${p.name}')">
+                <div class="vote-card ${p.hasVoted ? 'voted' : ''}" onclick="castVote('${p.name}')">
                     <span class="font-bold">${p.name}</span>
-                    <span class="player-badge">${votes[p.name] || 0} votos</span>
+                    <span class="voted-badge">${votes[p.name] || 0} votos</span>
                 </div>
             `).join('');
         }
@@ -1042,14 +1161,6 @@
             }
         });
 
-        // Initialize local game with some players
-        function initLocalGame() {
-            for(let i=0; i<4; i++) addLocalPlayer();
-        }
-        
-        // Add initial local players on page load
-        window.onload = initLocalGame;
-
         // Leave room
         function leaveRoom() {
             socket.emit('leave-room');
@@ -1089,6 +1200,14 @@
             
             setTimeout(() => container.innerHTML = '', 4000);
         }
+
+        // Initialize local game with some players
+        function initLocalGame() {
+            for(let i=0; i<4; i++) addLocalPlayer();
+        }
+        
+        // Add initial local players on page load
+        window.onload = initLocalGame;
     </script>
 </body>
 </html>
