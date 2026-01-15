@@ -70,9 +70,18 @@ app.get('/health', (req, res) => {
 // Serve static files (after API routes)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Fallback to index.html for SPA routing
-app.get('*', (req, res) => {
+// Explicit routes
+app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/game', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'game.html'));
+});
+
+// Health check
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // Socket.io connection handling
