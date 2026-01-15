@@ -446,11 +446,16 @@
             }
         }
     </style>
-</head>
-<body class="flex items-center justify-center min-h-screen p-4">
-    <div id="confetti-container" class="fixed inset-0 pointer-events-none z-50 overflow-hidden"></div>
-    
-    <div class="game-card w-full max-w-md p-8 relative">
+    </head>
+    <body class="flex items-center justify-center min-h-screen p-4">
+        <div id="confetti-container" class="fixed inset-0 pointer-events-none z-50 overflow-hidden"></div>
+        
+        <div id="connection-status" class="connection-status hidden">
+            <div class="status-dot"></div>
+            <span id="status-text">Conectando...</span>
+        </div>
+        
+        <div class="game-card w-full max-w-md p-8 relative">
         
         <!-- Pantalla de Conexión -->
         <div id="screen-connect" class="space-y-6">
@@ -736,16 +741,25 @@
 
         // Connection status
         socket.on('connect', () => {
-            document.getElementById('connection-status').classList.remove('hidden');
-            document.getElementById('status-text').textContent = 'Conectado';
-            document.querySelector('.status-dot').classList.add('bg-green-500');
-            document.querySelector('.status-dot').classList.remove('bg-red-500');
+            const statusEl = document.getElementById('connection-status');
+            if (statusEl) statusEl.classList.remove('hidden');
+            const textEl = document.getElementById('status-text');
+            if (textEl) textEl.textContent = 'Conectado';
+            const dotEl = document.querySelector('.status-dot');
+            if (dotEl) {
+                dotEl.classList.add('bg-green-500');
+                dotEl.classList.remove('bg-red-500');
+            }
         });
 
         socket.on('disconnect', () => {
-            document.getElementById('status-text').textContent = 'Desconectado';
-            document.querySelector('.status-dot').classList.remove('bg-green-500');
-            document.querySelector('.status-dot').classList.add('bg-red-500');
+            const textEl = document.getElementById('status-text');
+            if (textEl) textEl.textContent = 'Desconectado';
+            const dotEl = document.querySelector('.status-dot');
+            if (dotEl) {
+                dotEl.classList.remove('bg-green-500');
+                dotEl.classList.add('bg-red-500');
+            }
         });
 
         socket.on('connect_error', (err) => {
