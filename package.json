@@ -1,0 +1,22 @@
+{
+  "name": "el-impostor",
+  "version": "1.0.0",
+  "description": "El Impostor - Juego de deducción social para grupos de amigos",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "game",
+    "deduction",
+    "social",
+    "party-game",
+    "impostor"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

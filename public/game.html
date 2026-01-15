@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>🕵️ El Impostor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', -apple-system, sans-serif; }
+        body { 
+            background: linear-gradient(135deg, #0b0f1a 0%, #1a1f35 50%, #0b0f1a 100%);
+            background-attachment: fixed;
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            color: white;
+            min-height: 100vh;
+        }
+        .iphone-card { 
+            background: rgba(22, 27, 44, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .hidden { display: none !important; }
+        .btn-ios:active { transform: scale(0.96); opacity: 0.8; transition: 0.1s; }
+        input { outline: none; }
+        input::placeholder { color: #4b5563; }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(239, 68, 68, 0.6); }
+        }
+        @keyframes confetti {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        .animate-glow { animation: pulse-glow 2s ease-in-out infinite; }
+        
+        .player-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .category-badge {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #ef4444 0%, #f97316 100%);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div id="confetti-container" class="fixed inset-0 pointer-events-none z-50 overflow-hidden"></div>
+    
+    <div class="w-full max-w-md p-8 rounded-[2.5rem] shadow-2xl iphone-card relative overflow-hidden">
+        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-purple-500 to-red-500"></div>
+        
+        <!-- Pantalla de Inicio -->
+        <div id="screen-setup" class="space-y-6">
+            <div class="text-center">
+                <div class="inline-block animate-float mb-4">
+                    <span class="text-6xl">🕵️</span>
+                </div>
+                <h1 class="text-4xl font-black tracking-tight text-white mb-2">IMPOSTOR</h1>
+                <p class="text-slate-400 text-sm">Descubre al impostor entre nosotros</p>
+            </div>
+
+            <div class="grid grid-cols-4 gap-2 p-1 bg-slate-800/50 rounded-xl">
+                <button onclick="selectCategory('general')" id="cat-general" class="category-btn py-2 px-1 rounded-lg text-xs font-bold transition-all bg-red-600 text-white">GENERAL</button>
+                <button onclick="selectCategory('peliculas')" id="cat-peliculas" class="category-btn py-2 px-1 rounded-lg text-xs font-bold transition-all bg-slate-700 text-slate-400">PELÍCULAS</button>
+                <button onclick="selectCategory('paises')" id="cat-paises" class="category-btn py-2 px-1 rounded-lg text-xs font-bold transition-all bg-slate-700 text-slate-400">PAÍSES</button>
+                <button onclick="selectCategory('comida')" id="cat-comida" class="category-btn py-2 px-1 rounded-lg text-xs font-bold transition-all bg-slate-700 text-slate-400">COMIDA</button>
+                <button onclick="selectCategory('tecnologia')" id="cat-tecnologia" class="category-btn py-2 px-1 rounded-lg text-xs font-bold transition-all bg-slate-700 text-slate-400">TECNO</button>
+                <button onclick="selectCategory('deportes')" id="cat-deportes" class="category-btn py-2 px-1 rounded-lg text-xs font-bold transition-all bg-slate-700 text-slate-400">DEPORTES</button>
+                <button onclick="selectCategory('animales')" id="cat-animales" class="category-btn py-2 px-1 rounded-lg text-xs font-bold transition-all bg-slate-700 text-slate-400">ANIMALES</button>
+                <button onclick="selectCategory('colores')" id="cat-colores" class="category-btn py-2 px-1 rounded-lg text-xs font-bold transition-all bg-slate-700 text-slate-400">COLORES</button>
+            </div>
+
+            <div id="names-container" class="space-y-3 max-h-52 overflow-y-auto pr-2 scrollbar-thin">
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="addPlayerInput()" class="flex-1 py-3 rounded-xl border border-dashed border-slate-600 text-slate-400 text-sm font-bold active-scale">
+                    + AGREGAR
+                </button>
+                <button onclick="removeLastPlayer()" class="py-3 px-4 rounded-xl border border-dashed border-slate-600 text-slate-400 text-sm font-bold">
+                    − QUITAR
+                </button>
+            </div>
+
+            <div class="flex items-center gap-3 bg-slate-800/30 p-3 rounded-xl">
+                <span class="text-xs text-slate-400 font-medium">IMPOSTORES:</span>
+                <div class="flex-1 flex gap-1" id="impostor-count">
+                    <button onclick="setImpostorCount(1)" class="count-btn w-8 h-8 rounded-lg bg-red-600 text-white font-bold text-sm">1</button>
+                    <button onclick="setImpostorCount(2)" class="count-btn w-8 h-8 rounded-lg bg-slate-700 text-slate-400 font-bold text-sm">2</button>
+                    <button onclick="setImpostorCount(3)" class="count-btn w-8 h-8 rounded-lg bg-slate-700 text-slate-400 font-bold text-sm">3</button>
+                </div>
+            </div>
+
+            <button onclick="initGame()" class="w-full bg-gradient-to-r from-red-600 to-red-700 py-5 rounded-2xl font-bold text-lg btn-ios shadow-lg shadow-red-900/30 uppercase tracking-widest relative overflow-hidden">
+                <span class="relative z-10">COMENZAR</span>
+                <div class="absolute inset-0 bg-gradient-to-r from-red-500 to-orange-500 opacity-0 hover:opacity-20 transition-opacity"></div>
+            </button>
+        </div>
+
+        <!-- Pantalla de Transición -->
+        <div id="screen-transition" class="hidden text-center space-y-6 py-8">
+            <div class="space-y-4">
+                <div class="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto border border-red-500/30 animate-glow">
+                    <span class="text-4xl">📱</span>
+                </div>
+                <h2 class="text-slate-400 uppercase tracking-widest text-xs font-bold">Pasá el teléfono a:</h2>
+                <div id="current-player-name" class="text-4xl font-black text-white px-2 animate-float">NOMBRE</div>
+                <div id="player-counter" class="text-sm text-slate-500">Jugador 1 de 5</div>
+            </div>
+            <button onclick="revealRole()" class="w-full bg-white text-black py-5 rounded-2xl font-bold text-lg btn-ios shadow-xl relative overflow-hidden">
+                <span class="relative z-10">👁️ VER MI ROL</span>
+            </button>
+        </div>
+
+        <!-- Pantalla de Revelación -->
+        <div id="screen-reveal" class="hidden text-center space-y-6 py-8">
+            <h2 class="text-red-500 font-bold uppercase tracking-widest text-xs">Tu palabra es:</h2>
+            <div id="secret-word" class="text-3xl font-black bg-gradient-to-br from-slate-900 to-slate-800 py-16 rounded-3xl border border-red-500/30 px-4 shadow-inner">
+                ---
+            </div>
+            <div id="role-indicator" class="hidden px-4 py-2 rounded-xl font-bold text-sm"></div>
+            <button onclick="nextStep()" class="w-full bg-slate-700 py-5 rounded-2xl font-bold text-lg btn-ios">
+                ✅ YA LA VI
+            </button>
+        </div>
+
+        <!-- Pantalla de Juego -->
+        <div id="screen-playing" class="hidden text-center space-y-6 py-8">
+            <div class="relative inline-block">
+                <div class="absolute inset-0 bg-red-500 blur-3xl opacity-20 animate-pulse"></div>
+                <span class="text-7xl block relative animate-float">🕵️‍♂️</span>
+            </div>
+            <h2 class="text-2xl font-black uppercase">¡A DEBATIR!</h2>
+            
+            <div class="bg-slate-900/50 p-4 rounded-xl text-left text-sm text-slate-300 space-y-2">
+                <p class="flex items-start gap-2"><span class="text-red-500">•</span> Di una palabra relacionada con el tema</p>
+                <p class="flex items-start gap-2"><span class="text-red-500">•</span> El impostor debe pasar desapercibido</p>
+                <p class="flex items-start gap-2"><span class="text-red-500">•</span> ¡Encuentra al mentiroso!</p>
+            </div>
+
+            <div class="bg-slate-800/50 rounded-xl p-4 space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs text-slate-400 uppercase tracking-wider">TIEMPO</span>
+                    <span id="timer-display" class="text-2xl font-black text-red-500">2:00</span>
+                </div>
+                <div class="h-2 bg-slate-700 rounded-full overflow-hidden">
+                    <div id="timer-bar" class="h-full progress-bar rounded-full transition-all duration-1000" style="width: 100%"></div>
+                </div>
+                <button onclick="toggleTimer()" id="timer-btn" class="w-full py-2 rounded-lg bg-slate-700 text-white text-sm font-bold">⏸️ PAUSAR</button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="startVoting()" class="bg-slate-700 py-4 rounded-xl font-bold text-sm">
+                    🗳️ VOTAR
+                </button>
+                <button onclick="resetGame()" class="bg-slate-800 py-4 rounded-xl font-bold text-sm text-slate-400">
+                    🔄 NUEVA PARTIDA
+                </button>
+            </div>
+        </div>
+
+        <!-- Pantalla de Votación -->
+        <div id="screen-voting" class="hidden text-center space-y-6 py-8">
+            <h2 class="text-xl font-black uppercase">¿QUIÉN ES EL IMPOSTOR?</h2>
+            <p class="text-slate-400 text-xs">Toca para votar</p>
+            <div id="voting-players" class="space-y-2 max-h-64 overflow-y-auto">
+            </div>
+            <button onclick="backToGame()" class="w-full border border-slate-700 text-slate-400 py-3 rounded-xl font-bold text-sm">
+                VOLVER AL JUEGO
+            </button>
+        </div>
+
+        <!-- Pantalla de Resultados -->
+        <div id="screen-results" class="hidden text-center space-y-6 py-8">
+            <div id="result-emoji" class="text-8xl animate-float">🎉</div>
+            <h2 id="result-title" class="text-2xl font-black uppercase">¡RESULTADOS!</h2>
+            <div id="result-content" class="bg-slate-900/50 p-4 rounded-xl text-left text-sm space-y-2">
+            </div>
+            <button onclick="resetGame()" class="w-full bg-gradient-to-r from-red-600 to-red-700 py-4 rounded-2xl font-bold text-lg btn-ios shadow-lg">
+                🔄 JUGAR DE NUEVO
+            </button>
+        </div>
+    </div>
+
+    <!-- Audio elements -->
+    <audio id="sfx-reveal" src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbqWEyMmiW1+3HZS4uYo3R7sxgLSxgi9DtyWQtLWCJ0O7KYy0sYIvQ7slkLi1gidDuy2MtLGCL0O7JZC0sYIrQ7slkLi1gidDuy2MtLGCL0O7JZC0sYIrQ7slkLi1gidDuy2MtLGCL0O7J"></audio>
+    <audio id="sfx-vote" src="data:audio/wav;base64,UklGRl9CAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhOkIAAA=="></audio>
+
+    <script>
+        const wordBank = {
+            general: ["Pizza", "París", "iPhone", "Fútbol", "Elefante", "Netflix", "Guitarra", "Dinosaurio", "Chocolate", "Tiburón", "Espada", "Marte", "Cine", "Hamburguesa", "Avión", "Batman", "Zombi", "Minecraft", "Sushi", "Playa", "Robot", "Nube", "Fuego", "Hielo", "Luna", "Sol", "Estrella", "Teléfono", "Reloj", "Cerveza", "Gato", "Perro", "Pájaro", "Coche", "Casa", "Libro", "Agua", "Tierra", "Viento", "Música", "Danza"],
+            peliculas: ["Matrix", "Titanic", "Avatar", "Gladiador", "Frozen", "Toy Story", "Jurassic Park", "El Rey León", "Volver al Futuro", "Star Wars", "Harry Potter", "El Señor de los Anillos", "Spider-Man", "Iron Man", "Batman", "Terminator", "Alien", "Depredador", "Jaws", "Psicosis", "Inception", "Interstellar", "Coco", "Encanto", "Moana", "Buscando a Nemo", "Los Increíbles", "Shrek", "Mi Villano Favorito", "Minions", "Piratas del Caribe", "El Mago de Oz", "E.T.", " Tibble", "Forrest Gump", "Pulp Fiction"],
+            paises: ["España", "Francia", "Italia", "Alemania", "Japón", "Brasil", "Argentina", "México", "Canadá", "Estados Unidos", "China", "India", "Australia", "Egipto", "Grecia", "Rusia", "Inglaterra", "Portugal", "Colombia", "Perú", "Chile", "Uruguay", "Venezuela", "Cuba", "Corea", "Tailandia", "Vietnam", "Marruecos", "Turquía", "Noruega", "Suecia", "Finlandia", "Dinamarca", "Holanda", "Bélgica", "Suiza", "Austria", "Irlanda", "Escocia"],
+            comida: ["Tacos", "Paella", "Sushi", "Pizza", "Hamburguesa", "Lasaña", "Curry", "Ramen", "Ceviche", "Empanadas", "Churrasco", "Milanesa", "Feijoada", "Bandeja Paisa", "Arepa", "Patacón", "Causa", "Anticuchos", "Chicha", "Pisco Sour", "Guisado", "Tamales", "Pupusas", "Chimichanga", "Enchiladas", "Tostada", "Gordita", "Quesadilla", "Burrito", "Taco", "Pasta", "Risotto", "Paella", "Tortilla", "Croissant", "Bagel", "Donut", "Cupcake", "Brownie"],
+            tecnologia: ["Computadora", "Internet", "Inteligencia Artificial", "Robot", "Aplicación", "Videojuego", "Redes Sociales", "Smartphone", "Tablet", "Wifi", "Bluetooth", "Nube", "Big Data", "Ciberseguridad", "Blockchain", "Criptomoneda", "Realidad Virtual", "Realidad Aumentada", "Drone", "Impresora 3D", "GPS", "Sensor", "Pantalla Táctil", "Procesador", "Memoria", "Disco Duro", "Batería", "Cargador", "Cable", "Auriculares", "Teclado", "Mouse", "Cámara", "Micrófono", "Altavoz", "Router", "Módem", "Servidor", "Base de Datos"],
+            deportes: ["Fútbol", "Baloncesto", "Tenis", "Natación", "Atletismo", "Béisbol", "Fútbol Americano", "Voleibol", "Boxeo", "Artes Marciales", "Gimnasia", "Ciclismo", "Esquí", "Surf", "Escalada", "Golf", "Hockey", "Rugby", "Críquet", "Ping Pong", "Bádminton", "Patinaje", "Lucha", "Carrera", "Maratón", "Triatlón", "Equitación", "Tiro", "Arquería", "Lacrosse", "Handball", "Waterpolo", "Remo", "Piragüismo", "Snowboard", "Skateboard", "BMX", "Wrestling"],
+            animales: ["León", "Tigre", "Elefante", "Jirafa", "Mono", "Conejo", "Perro", "Gato", "Pájaro", "Pez", "Delfín", "Ballena", "Tiburón", "Serpiente", "Lagarto", "Rana", "Tortuga", "Cocodrilo", "Hipopótamo", "Rinoceronte", "Zebra", "Caballo", "Vaca", "Cerdo", "Oveja", "Gallo", "Pato", "Águila", "Búho", "Murciélago", "Lobo", "Zorro", "oso", "Panda", "Koala", "Canguro", "Pingüino", "Foca", "Ballena", "Pulpo"],
+            colores: ["Rojo", "Azul", "Verde", "Amarillo", "Naranja", "Morado", "Rosa", "Negro", "Blanco", "Gris", "Marrón", "Beige", "Celeste", "Turquesa", "Violeta", "Lila", "Dorado", "Plateado", "Cyan", "Magenta", "Oscuro", "Claro", "Brillante", "Opaco", "Neón", "Pastel", "Matizado", "Sólido", "Transparente", "Opaco", "Carmesí", "Escarlata", "Grisáceo", "Azulado", "Verdoso", "Amarillento", "Anaranjado"]
+        };
+
+        let playerNames = [];
+        let playerRoles = [];
+        let currentIndex = 0;
+        let impostorCount = 1;
+        let selectedCategory = 'general';
+        let timerInterval = null;
+        let timeLeft = 120;
+        let timerRunning = false;
+        let votes = {};
+        let votedPlayers = new Set();
+
+        window.onload = () => {
+            for(let i=0; i<4; i++) addPlayerInput();
+        };
+
+        function addPlayerInput() {
+            const container = document.getElementById('names-container');
+            const div = document.createElement('div');
+            div.className = "flex gap-2 player-input-container";
+            div.innerHTML = `
+                <input type="text" placeholder="Nombre del jugador..." class="player-input flex-1 bg-slate-800/50 border border-slate-700 p-3 rounded-xl text-white focus:border-red-500 transition text-sm">
+                <button onclick="removePlayer(this)" class="px-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-500 hover:text-red-500">✕</button>
+            `;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function removePlayer(btn) {
+            const container = document.getElementById('names-container');
+            if (container.children.length > 2) {
+                btn.parentElement.remove();
+            }
+        }
+
+        function removeLastPlayer() {
+            const container = document.getElementById('names-container');
+            if (container.children.length > 2) {
+                container.removeChild(container.lastChild);
+            }
+        }
+
+        function selectCategory(cat) {
+            selectedCategory = cat;
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('bg-red-600', 'text-white');
+                btn.classList.add('bg-slate-700', 'text-slate-400');
+            });
+            document.getElementById(`cat-${cat}`).classList.remove('bg-slate-700', 'text-slate-400');
+            document.getElementById(`cat-${cat}`).classList.add('bg-red-600', 'text-white');
+        }
+
+        function setImpostorCount(count) {
+            impostorCount = count;
+            document.querySelectorAll('.count-btn').forEach((btn, idx) => {
+                if (idx + 1 === count) {
+                    btn.classList.remove('bg-slate-700', 'text-slate-400');
+                    btn.classList.add('bg-red-600', 'text-white');
+                } else {
+                    btn.classList.remove('bg-red-600', 'text-white');
+                    btn.classList.add('bg-slate-700', 'text-slate-400');
+                }
+            });
+        }
+
+        function playSound(type) {
+            try {
+                const audio = document.getElementById(type);
+                if (audio) {
+                    audio.currentTime = 0;
+                    audio.play().catch(() => {});
+                }
+            } catch (e) {}
+        }
+
+        function initGame() {
+            const inputs = document.querySelectorAll('.player-input');
+            playerNames = Array.from(inputs).map(i => i.value.trim()).filter(n => n !== "");
+
+            if (playerNames.length < 3) {
+                showNotification("Se necesitan al menos 3 jugadores");
+                return;
+            }
+            if (playerNames.length > 12) {
+                showNotification("Máximo 12 jugadores permitidos");
+                return;
+            }
+
+            const words = wordBank[selectedCategory];
+            const secretWord = words[Math.floor(Math.random() * words.length)];
+            playerRoles = new Array(playerNames.length).fill(secretWord);
+            
+            let impostors = new Set();
+            while(impostors.size < impostorCount) {
+                impostors.add(Math.floor(Math.random() * playerNames.length));
+            }
+            
+            impostors.forEach(idx => {
+                playerRoles[idx] = { word: "IMPOSTOR 🕵️", isImpostor: true };
+            });
+
+            currentIndex = 0;
+            votes = {};
+            votedPlayers = new Set();
+            playerNames.forEach(name => votes[name] = 0);
+            
+            stopTimer();
+            timeLeft = 120;
+            updateTimerDisplay();
+            
+            showScreen('screen-transition');
+            updateTransitionScreen();
+            playSound('sfx-reveal');
+        }
+
+        function updateTransitionScreen() {
+            document.getElementById('current-player-name').innerText = playerNames[currentIndex].toUpperCase();
+            document.getElementById('player-counter').innerText = `Jugador ${currentIndex + 1} de ${playerNames.length}`;
+        }
+
+        function revealRole() {
+            const display = document.getElementById('secret-word');
+            const role = playerRoles[currentIndex];
+            const indicator = document.getElementById('role-indicator');
+            
+            if (typeof role === 'object' && role.isImpostor) {
+                display.innerText = "🕵️ IMPOSTOR 🕵️";
+                display.style.color = '#ef4444';
+                display.classList.add('animate-glow');
+                indicator.classList.remove('hidden');
+                indicator.className = "px-4 py-2 rounded-xl font-bold text-sm bg-red-600 text-white";
+                indicator.innerText = "¡No tienes palabra! Debes adivinar.";
+            } else {
+                display.innerText = role;
+                display.style.color = '#ffffff';
+                display.classList.remove('animate-glow');
+                indicator.classList.remove('hidden');
+                indicator.className = "px-4 py-2 rounded-xl font-bold text-sm bg-green-600 text-white";
+                indicator.innerText = "¡No reveles tu palabra!";
+            }
+            
+            showScreen('screen-reveal');
+            playSound('sfx-reveal');
+        }
+
+        function nextStep() {
+            document.getElementById('secret-word').classList.remove('animate-glow');
+            currentIndex++;
+            if (currentIndex < playerNames.length) {
+                updateTransitionScreen();
+                showScreen('screen-transition');
+            } else {
+                showScreen('screen-playing');
+                startTimer();
+            }
+        }
+
+        function showScreen(id) {
+            ['screen-setup', 'screen-transition', 'screen-reveal', 'screen-playing', 'screen-voting', 'screen-results'].forEach(s => {
+                document.getElementById(s).classList.add('hidden');
+            });
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function showNotification(msg) {
+            const div = document.createElement('div');
+            div.className = "fixed inset-0 flex items-center justify-center z-50 pointer-events-none";
+            div.innerHTML = `<div class="bg-red-600 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-2xl animate-bounce">${msg}</div>`;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 2000);
+        }
+
+        // Timer functions
+        function startTimer() {
+            if (timerRunning) return;
+            timerRunning = true;
+            updateTimerBtn();
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
+                    stopTimer();
+                    showNotification("¡Tiempo agotado!");
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            timerRunning = false;
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            updateTimerBtn();
+        }
+
+        function toggleTimer() {
+            if (timerRunning) {
+                stopTimer();
+            } else {
+                startTimer();
+            }
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            document.getElementById('timer-display').innerText = `${mins}:${secs.toString().padStart(2, '0')}`;
+            document.getElementById('timer-bar').style.width = `${(timeLeft / 120) * 100}%`;
+        }
+
+        function updateTimerBtn() {
+            const btn = document.getElementById('timer-btn');
+            btn.innerText = timerRunning ? '⏸️ PAUSAR' : '▶️ CONTINUAR';
+        }
+
+        // Voting functions
+        function startVoting() {
+            stopTimer();
+            showScreen('screen-voting');
+            renderVotingPlayers();
+        }
+
+        function renderVotingPlayers() {
+            const container = document.getElementById('voting-players');
+            container.innerHTML = '';
+            
+            playerNames.forEach(name => {
+                const div = document.createElement('div');
+                const hasVoted = votedPlayers.has(name);
+                div.className = `player-card p-4 rounded-xl flex justify-between items-center cursor-pointer transition-all ${hasVoted ? 'bg-green-900/30 border-green-500' : 'hover:bg-slate-800'}`;
+                div.innerHTML = `
+                    <span class="font-bold">${name}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-slate-500">${votes[name]} votos</span>
+                        <span class="text-lg">${hasVoted ? '✅' : '🗳️'}</span>
+                    </div>
+                `;
+                div.onclick = () => castVote(name);
+                container.appendChild(div);
+            });
+        }
+
+        function castVote(forName) {
+            const currentPlayer = playerNames[currentIndex];
+            if (votedPlayers.has(currentPlayer)) {
+                showNotification("¡Ya votaste!");
+                return;
+            }
+            
+            votes[forName]++;
+            votedPlayers.add(currentPlayer);
+            playSound('sfx-vote');
+            renderVotingPlayers();
+            showNotification(`Voto registrado para ${forName}`);
+        }
+
+        function backToGame() {
+            showScreen('screen-playing');
+            startTimer();
+        }
+
+        function showResults() {
+            stopTimer();
+            showScreen('screen-results');
+            
+            let maxVotes = 0;
+            let eliminated = null;
+            Object.entries(votes).forEach(([name, count]) => {
+                if (count > maxVotes) {
+                    maxVotes = count;
+                    eliminated = name;
+                }
+            });
+            
+            const isImpostorEliminated = playerRoles[playerNames.indexOf(eliminated)]?.isImpostor;
+            
+            if (isImpostorEliminated) {
+                document.getElementById('result-emoji').innerText = '🎉';
+                document.getElementById('result-title').innerText = '¡GANARON LOS CIUDADANOS!';
+                document.getElementById('result-title').className = 'text-2xl font-black uppercase text-green-500';
+                launchConfetti();
+            } else {
+                document.getElementById('result-emoji').innerText = '😈';
+                document.getElementById('result-title').innerText = '¡GANARON LOS IMPOSTORES!';
+                document.getElementById('result-title').className = 'text-2xl font-black uppercase text-red-500';
+            }
+            
+            let content = `<p class="font-bold text-white">${eliminated} fue eliminado/a</p>`;
+            content += `<p class="text-slate-400 text-xs">Recibió ${maxVotes} votos</p>`;
+            
+            content += `<p class="font-bold text-white mt-3">Impostores:</p>`;
+            playerRoles.forEach((role, idx) => {
+                if (role?.isImpostor) {
+                    content += `<p class="text-red-400 text-sm">👤 ${playerNames[idx]}</p>`;
+                }
+            });
+            
+            content += `<p class="font-bold text-white mt-3">Palabra secreta:</p>`;
+            const secretRoles = playerRoles.filter(r => typeof r === 'string');
+            content += `<p class="text-green-400 text-sm">${secretRoles[0] || 'N/A'}</p>`;
+            
+            document.getElementById('result-content').innerHTML = content;
+        }
+
+        function launchConfetti() {
+            const container = document.getElementById('confetti-container');
+            container.innerHTML = '';
+            const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#a855f7', '#ec4899'];
+            
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.cssText = `
+                    position: absolute;
+                    width: ${Math.random() * 10 + 5}px;
+                    height: ${Math.random() * 10 + 5}px;
+                    background: ${colors[Math.floor(Math.random() * colors.length)]};
+                    left: ${Math.random() * 100}%;
+                    top: -20px;
+                    border-radius: ${Math.random() > 0.5 ? '50%' : '0'};
+                    animation: confetti ${Math.random() * 2 + 2}s linear forwards;
+                    animation-delay: ${Math.random() * 0.5}s;
+                `;
+                container.appendChild(confetti);
+            }
+            
+            setTimeout(() => container.innerHTML = '', 4000);
+        }
+
+        function resetGame() {
+            stopTimer();
+            timeLeft = 120;
+            votedPlayers.clear();
+            updateTimerDisplay();
+            showScreen('setup');
+            
+            const container = document.getElementById('names-container');
+            container.innerHTML = '';
+            for(let i=0; i<4; i++) addPlayerInput();
+        }
+    </script>
+</body>
+</html>
