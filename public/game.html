@@ -11,8 +11,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * { font-family: 'Inter', -apple-system, sans-serif; }
-        body { 
-            background: linear-gradient(135deg, #0b0f1a 0%, #1a1f35 50%, #0b0f1a 100%);
+        
+        body {
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(120, 50, 50, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(80, 50, 120, 0.15) 0%, transparent 50%),
+                linear-gradient(135deg, #0b0f1a 0%, #1a1f35 50%, #0b0f1a 100%);
             background-attachment: fixed;
             font-family: 'Inter', sans-serif;
             -webkit-tap-highlight-color: transparent;
@@ -20,51 +24,419 @@
             color: white;
             min-height: 100vh;
         }
-        .iphone-card { 
-            background: rgba(22, 27, 44, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
+
         .hidden { display: none !important; }
-        .btn-ios:active { transform: scale(0.96); opacity: 0.8; transition: 0.1s; }
-        input { outline: none; }
-        input::placeholder { color: #4b5563; }
-        
+
+        /* Main Card Container */
+        .game-card {
+            background: rgba(15, 20, 35, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 2rem;
+            box-shadow: 
+                0 0 0 1px rgba(255,255,255,0.05),
+                0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                0 0 100px -20px rgba(239, 68, 68, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, 
+                transparent, 
+                #ef4444, 
+                #f97316, 
+                #ef4444, 
+                transparent);
+            background-size: 200% 100%;
+            animation: gradient-shift 3s linear infinite;
+        }
+
+        @keyframes gradient-shift {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 200% 0%; }
+        }
+
+        /* Neon Button Styles (uiverse inspired) */
+        .neon-btn {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #fff;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            border: none;
+            border-radius: 1rem;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 4px 15px rgba(239, 68, 68, 0.3),
+                0 0 30px rgba(239, 68, 68, 0.1);
+        }
+
+        .neon-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent,
+                rgba(255,255,255,0.1),
+                transparent
+            );
+            transform: rotate(45deg);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        .neon-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 8px 25px rgba(239, 68, 68, 0.4),
+                0 0 50px rgba(239, 68, 68, 0.2);
+        }
+
+        .neon-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .neon-btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Border Neon Button */
+        .neon-border-btn {
+            position: relative;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #94a3b8;
+            background: transparent;
+            border: 2px solid rgba(148, 163, 184, 0.3);
+            border-radius: 1rem;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .neon-border-btn::before,
+        .neon-border-btn::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ef4444;
+            transition: all 0.3s ease;
+        }
+
+        .neon-border-btn::before {
+            top: -2px;
+            left: -2px;
+            border-radius: 50% 0 0 0;
+        }
+
+        .neon-border-btn::after {
+            bottom: -2px;
+            right: -2px;
+            border-radius: 0 0 50% 0;
+        }
+
+        .neon-border-btn:hover {
+            color: #fff;
+            border-color: rgba(239, 68, 68, 0.5);
+            box-shadow: 
+                inset 0 0 20px rgba(239, 68, 68, 0.1),
+                0 0 20px rgba(239, 68, 68, 0.2);
+        }
+
+        .neon-border-btn:hover::before,
+        .neon-border-btn:hover::after {
+            width: calc(100% + 4px);
+            height: calc(100% + 4px);
+            border-radius: 0.5rem;
+        }
+
+        /* Category Buttons */
+        .category-btn {
+            position: relative;
+            padding: 0.5rem 0.25rem;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            background: rgba(30, 35, 50, 0.8);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .category-btn.active {
+            color: #fff;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            border-color: transparent;
+            box-shadow: 
+                0 4px 15px rgba(239, 68, 68, 0.4),
+                0 0 30px rgba(239, 68, 68, 0.2);
+        }
+
+        .category-btn:hover:not(.active) {
+            color: #94a3b8;
+            background: rgba(40, 45, 65, 0.9);
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        /* Animated Input (uiverse style) */
+        .neon-input {
+            position: relative;
+            width: 100%;
+        }
+
+        .neon-input input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            font-size: 0.95rem;
+            color: #fff;
+            background: rgba(20, 25, 40, 0.8);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 0.75rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .neon-input input::placeholder {
+            color: #4b5563;
+        }
+
+        .neon-input input:focus {
+            border-color: rgba(239, 68, 68, 0.5);
+            box-shadow: 
+                0 0 0 3px rgba(239, 68, 68, 0.1),
+                0 0 20px rgba(239, 68, 68, 0.1);
+        }
+
+        .neon-input::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ef4444, transparent);
+            transform: translateX(-50%);
+            transition: width 0.3s ease;
+        }
+
+        .neon-input:focus-within::before {
+            width: 80%;
+        }
+
+        /* Player Remove Button */
+        .remove-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(30, 35, 50, 0.8);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 0.75rem;
+            color: #64748b;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .remove-btn:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+        }
+
+        /* Impostor Count Buttons */
+        .count-btn {
+            width: 2.25rem;
+            height: 2.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 700;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(30, 35, 50, 0.8);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #64748b;
+        }
+
+        .count-btn.active {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            border-color: transparent;
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .count-btn:hover:not(.active) {
+            background: rgba(50, 55, 75, 0.9);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        /* Word Reveal Card */
+        .word-card {
+            background: linear-gradient(145deg, rgba(15, 20, 35, 0.9) 0%, rgba(25, 30, 50, 0.9) 100%);
+            border: 2px solid rgba(239, 68, 68, 0.2);
+            border-radius: 1.5rem;
+            box-shadow: 
+                0 0 30px rgba(239, 68, 68, 0.1),
+                inset 0 0 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .word-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(239, 68, 68, 0.1) 0%, transparent 50%);
+            animation: pulse-rotate 4s linear infinite;
+        }
+
+        @keyframes pulse-rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .word-card.impostor {
+            border-color: rgba(239, 68, 68, 0.5);
+            animation: impostor-glow 1.5s ease-in-out infinite;
+        }
+
+        @keyframes impostor-glow {
+            0%, 100% { box-shadow: 0 0 30px rgba(239, 68, 68, 0.2); }
+            50% { box-shadow: 0 0 50px rgba(239, 68, 68, 0.4); }
+        }
+
+        /* Floating Animation */
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-10px); }
         }
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
-            50% { box-shadow: 0 0 40px rgba(239, 68, 68, 0.6); }
-        }
-        @keyframes confetti {
-            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-        }
         .animate-float { animation: float 3s ease-in-out infinite; }
-        .animate-glow { animation: pulse-glow 2s ease-in-out infinite; }
-        
-        .player-card {
-            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+
+        /* Timer Progress */
+        .timer-progress {
+            background: linear-gradient(90deg, #ef4444 0%, #f97316 50%, #ef4444 100%);
+            background-size: 200% 100%;
+            animation: gradient-scroll 2s linear infinite;
+        }
+
+        @keyframes gradient-scroll {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 200% 0%; }
+        }
+
+        /* Voting Card */
+        .vote-card {
+            background: linear-gradient(135deg, rgba(30, 35, 55, 0.8) 0%, rgba(20, 25, 40, 0.8) 100%);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 0.75rem;
+            padding: 0.875rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .vote-card:hover {
+            background: linear-gradient(135deg, rgba(50, 55, 80, 0.9) 0%, rgba(35, 45, 65, 0.9) 100%);
+            border-color: rgba(239, 68, 68, 0.3);
+            transform: translateX(4px);
+        }
+
+        .vote-card.voted {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 101, 52, 0.2) 100%);
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
+        .vote-card .voted-badge {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Result Card */
+        .result-card {
+            background: linear-gradient(145deg, rgba(25, 30, 50, 0.95) 0%, rgba(15, 20, 35, 0.95) 100%);
             border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 1rem;
         }
-        
-        .category-badge {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
         }
-        
-        .progress-bar {
-            background: linear-gradient(90deg, #ef4444 0%, #f97316 100%);
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(239, 68, 68, 0.3);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(239, 68, 68, 0.5);
+        }
+
+        /* Player name display */
+        .player-name {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            animation: name-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes name-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.1); }
+            50% { box-shadow: 0 0 40px rgba(239, 68, 68, 0.2); }
         }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
     <div id="confetti-container" class="fixed inset-0 pointer-events-none z-50 overflow-hidden"></div>
     
-    <div class="w-full max-w-md p-8 rounded-[2.5rem] shadow-2xl iphone-card relative overflow-hidden">
-        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-purple-500 to-red-500"></div>
+    <div class="game-card w-full max-w-md p-8 relative">
         
         <!-- Pantalla de Inicio -->
         <div id="screen-setup" class="space-y-6">
@@ -76,101 +448,106 @@
                 <p class="text-slate-400 text-sm">Descubre al impostor entre nosotros</p>
             </div>
 
-            <div class="grid grid-cols-4 gap-2 p-1 bg-slate-800/50 rounded-xl">
-                <button onclick="selectCategory('general')" id="cat-general" class="category-btn py-2 px-1 rounded-lg text-xs font-bold transition-all bg-red-600 text-white">GENERAL</button>
-                <button onclick="selectCategory('peliculas')" id="cat-peliculas" class="category-btn py-2 px-1 rounded-lg text-xs font-bold transition-all bg-slate-700 text-slate-400">PELÍCULAS</button>
-                <button onclick="selectCategory('paises')" id="cat-paises" class="category-btn py-2 px-1 rounded-lg text-xs font-bold transition-all bg-slate-700 text-slate-400">PAÍSES</button>
-                <button onclick="selectCategory('comida')" id="cat-comida" class="category-btn py-2 px-1 rounded-lg text-xs font-bold transition-all bg-slate-700 text-slate-400">COMIDA</button>
-                <button onclick="selectCategory('tecnologia')" id="cat-tecnologia" class="category-btn py-2 px-1 rounded-lg text-xs font-bold transition-all bg-slate-700 text-slate-400">TECNO</button>
-                <button onclick="selectCategory('deportes')" id="cat-deportes" class="category-btn py-2 px-1 rounded-lg text-xs font-bold transition-all bg-slate-700 text-slate-400">DEPORTES</button>
-                <button onclick="selectCategory('animales')" id="cat-animales" class="category-btn py-2 px-1 rounded-lg text-xs font-bold transition-all bg-slate-700 text-slate-400">ANIMALES</button>
-                <button onclick="selectCategory('colores')" id="cat-colores" class="category-btn py-2 px-1 rounded-lg text-xs font-bold transition-all bg-slate-700 text-slate-400">COLORES</button>
+            <div class="grid grid-cols-4 gap-2 p-1.5 bg-slate-900/50 rounded-xl">
+                <button onclick="selectCategory('general')" id="cat-general" class="category-btn active">GENERAL</button>
+                <button onclick="selectCategory('peliculas')" id="cat-peliculas" class="category-btn">PELÍCULAS</button>
+                <button onclick="selectCategory('paises')" id="cat-paises" class="category-btn">PAÍSES</button>
+                <button onclick="selectCategory('comida')" id="cat-comida" class="category-btn">COMIDA</button>
+                <button onclick="selectCategory('tecnologia')" id="cat-tecnologia" class="category-btn">TECNO</button>
+                <button onclick="selectCategory('deportes')" id="cat-deportes" class="category-btn">DEPORTES</button>
+                <button onclick="selectCategory('animales')" id="cat-animales" class="category-btn">ANIMALES</button>
+                <button onclick="selectCategory('colores')" id="cat-colores" class="category-btn">COLORES</button>
             </div>
 
-            <div id="names-container" class="space-y-3 max-h-52 overflow-y-auto pr-2 scrollbar-thin">
+            <div id="names-container" class="space-y-3 max-h-52 overflow-y-auto pr-2">
             </div>
 
             <div class="flex gap-2">
-                <button onclick="addPlayerInput()" class="flex-1 py-3 rounded-xl border border-dashed border-slate-600 text-slate-400 text-sm font-bold active-scale">
-                    + AGREGAR
+                <button onclick="addPlayerInput()" class="neon-border-btn flex-1">
+                    + AGREGAR JUGADOR
                 </button>
-                <button onclick="removeLastPlayer()" class="py-3 px-4 rounded-xl border border-dashed border-slate-600 text-slate-400 text-sm font-bold">
-                    − QUITAR
+                <button onclick="removeLastPlayer()" class="neon-border-btn px-4">
+                    −
                 </button>
             </div>
 
-            <div class="flex items-center gap-3 bg-slate-800/30 p-3 rounded-xl">
-                <span class="text-xs text-slate-400 font-medium">IMPOSTORES:</span>
-                <div class="flex-1 flex gap-1" id="impostor-count">
-                    <button onclick="setImpostorCount(1)" class="count-btn w-8 h-8 rounded-lg bg-red-600 text-white font-bold text-sm">1</button>
-                    <button onclick="setImpostorCount(2)" class="count-btn w-8 h-8 rounded-lg bg-slate-700 text-slate-400 font-bold text-sm">2</button>
-                    <button onclick="setImpostorCount(3)" class="count-btn w-8 h-8 rounded-lg bg-slate-700 text-slate-400 font-bold text-sm">3</button>
+            <div class="bg-slate-900/50 p-4 rounded-xl">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="text-xs text-slate-400 font-medium uppercase tracking-wider">IMPOSTORES</span>
+                    <div class="flex-1 h-px bg-slate-700"></div>
+                </div>
+                <div class="flex gap-2 justify-center" id="impostor-count">
+                    <button onclick="setImpostorCount(1)" class="count-btn active">1</button>
+                    <button onclick="setImpostorCount(2)" class="count-btn">2</button>
+                    <button onclick="setImpostorCount(3)" class="count-btn">3</button>
                 </div>
             </div>
 
-            <button onclick="initGame()" class="w-full bg-gradient-to-r from-red-600 to-red-700 py-5 rounded-2xl font-bold text-lg btn-ios shadow-lg shadow-red-900/30 uppercase tracking-widest relative overflow-hidden">
-                <span class="relative z-10">COMENZAR</span>
-                <div class="absolute inset-0 bg-gradient-to-r from-red-500 to-orange-500 opacity-0 hover:opacity-20 transition-opacity"></div>
+            <button onclick="initGame()" class="neon-btn w-full py-4 text-lg">
+                <span>🎮 COMENZAR</span>
             </button>
         </div>
 
         <!-- Pantalla de Transición -->
         <div id="screen-transition" class="hidden text-center space-y-6 py-8">
             <div class="space-y-4">
-                <div class="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto border border-red-500/30 animate-glow">
+                <div class="w-20 h-20 mx-auto rounded-full bg-slate-900/50 flex items-center justify-center border border-red-500/20">
                     <span class="text-4xl">📱</span>
                 </div>
-                <h2 class="text-slate-400 uppercase tracking-widest text-xs font-bold">Pasá el teléfono a:</h2>
-                <div id="current-player-name" class="text-4xl font-black text-white px-2 animate-float">NOMBRE</div>
-                <div id="player-counter" class="text-sm text-slate-500">Jugador 1 de 5</div>
+                <p class="text-slate-500 uppercase tracking-widest text-xs font-bold">Pasá el teléfono a</p>
+                <div id="current-player-name" class="player-name text-4xl font-black text-white px-4 py-6 rounded-2xl animate-float">
+                    NOMBRE
+                </div>
+                <p id="player-counter" class="text-slate-500 text-sm">Jugador 1 de 5</p>
             </div>
-            <button onclick="revealRole()" class="w-full bg-white text-black py-5 rounded-2xl font-bold text-lg btn-ios shadow-xl relative overflow-hidden">
-                <span class="relative z-10">👁️ VER MI ROL</span>
+            <button onclick="revealRole()" class="neon-btn w-full py-4">
+                <span>👁️ VER MI ROL</span>
             </button>
         </div>
 
         <!-- Pantalla de Revelación -->
         <div id="screen-reveal" class="hidden text-center space-y-6 py-8">
-            <h2 class="text-red-500 font-bold uppercase tracking-widest text-xs">Tu palabra es:</h2>
-            <div id="secret-word" class="text-3xl font-black bg-gradient-to-br from-slate-900 to-slate-800 py-16 rounded-3xl border border-red-500/30 px-4 shadow-inner">
+            <p class="text-red-500 font-bold uppercase tracking-widest text-xs">Tu palabra es</p>
+            <div id="secret-word" class="word-card text-3xl font-black text-white py-16 px-4 relative">
                 ---
             </div>
-            <div id="role-indicator" class="hidden px-4 py-2 rounded-xl font-bold text-sm"></div>
-            <button onclick="nextStep()" class="w-full bg-slate-700 py-5 rounded-2xl font-bold text-lg btn-ios">
-                ✅ YA LA VI
+            <div id="role-indicator" class="hidden px-4 py-2 rounded-lg font-bold text-sm"></div>
+            <button onclick="nextStep()" class="neon-btn w-full py-4">
+                <span>✅ YA LA VI</span>
             </button>
         </div>
 
         <!-- Pantalla de Juego -->
         <div id="screen-playing" class="hidden text-center space-y-6 py-8">
-            <div class="relative inline-block">
-                <div class="absolute inset-0 bg-red-500 blur-3xl opacity-20 animate-pulse"></div>
-                <span class="text-7xl block relative animate-float">🕵️‍♂️</span>
+            <div class="inline-block animate-float">
+                <span class="text-7xl">🕵️‍♂️</span>
             </div>
-            <h2 class="text-2xl font-black uppercase">¡A DEBATIR!</h2>
+            <h2 class="text-2xl font-black uppercase text-white">¡A DEBATIR!</h2>
             
             <div class="bg-slate-900/50 p-4 rounded-xl text-left text-sm text-slate-300 space-y-2">
-                <p class="flex items-start gap-2"><span class="text-red-500">•</span> Di una palabra relacionada con el tema</p>
+                <p class="flex items-start gap-2"><span class="text-red-500">•</span> Decí una palabra relacionada</p>
                 <p class="flex items-start gap-2"><span class="text-red-500">•</span> El impostor debe pasar desapercibido</p>
-                <p class="flex items-start gap-2"><span class="text-red-500">•</span> ¡Encuentra al mentiroso!</p>
+                <p class="flex items-start gap-2"><span class="text-red-500">•</span> ¡Encontrá al mentiroso!</p>
             </div>
 
-            <div class="bg-slate-800/50 rounded-xl p-4 space-y-3">
+            <div class="bg-slate-900/50 p-4 rounded-xl space-y-3">
                 <div class="flex justify-between items-center">
                     <span class="text-xs text-slate-400 uppercase tracking-wider">TIEMPO</span>
                     <span id="timer-display" class="text-2xl font-black text-red-500">2:00</span>
                 </div>
-                <div class="h-2 bg-slate-700 rounded-full overflow-hidden">
-                    <div id="timer-bar" class="h-full progress-bar rounded-full transition-all duration-1000" style="width: 100%"></div>
+                <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <div id="timer-bar" class="h-full timer-progress rounded-full" style="width: 100%"></div>
                 </div>
-                <button onclick="toggleTimer()" id="timer-btn" class="w-full py-2 rounded-lg bg-slate-700 text-white text-sm font-bold">⏸️ PAUSAR</button>
+                <button onclick="toggleTimer()" id="timer-btn" class="w-full py-2 rounded-lg bg-slate-800 text-white text-sm font-bold hover:bg-slate-700 transition">
+                    ⏸️ PAUSAR
+                </button>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
-                <button onclick="startVoting()" class="bg-slate-700 py-4 rounded-xl font-bold text-sm">
+                <button onclick="startVoting()" class="neon-btn py-3 text-sm">
                     🗳️ VOTAR
                 </button>
-                <button onclick="resetGame()" class="bg-slate-800 py-4 rounded-xl font-bold text-sm text-slate-400">
+                <button onclick="resetGame()" class="neon-border-btn py-3 text-sm">
                     🔄 NUEVA PARTIDA
                 </button>
             </div>
@@ -179,39 +556,36 @@
         <!-- Pantalla de Votación -->
         <div id="screen-voting" class="hidden text-center space-y-6 py-8">
             <h2 class="text-xl font-black uppercase">¿QUIÉN ES EL IMPOSTOR?</h2>
-            <p class="text-slate-400 text-xs">Toca para votar</p>
+            <p class="text-slate-500 text-xs">Tocá para votar</p>
             <div id="voting-players" class="space-y-2 max-h-64 overflow-y-auto">
             </div>
-            <button onclick="backToGame()" class="w-full border border-slate-700 text-slate-400 py-3 rounded-xl font-bold text-sm">
+            <button onclick="backToGame()" class="neon-border-btn w-full py-3">
                 VOLVER AL JUEGO
             </button>
         </div>
 
         <!-- Pantalla de Resultados -->
         <div id="screen-results" class="hidden text-center space-y-6 py-8">
-            <div id="result-emoji" class="text-8xl animate-float">🎉</div>
+            <div class="inline-block animate-float text-8xl" id="result-emoji">🎉</div>
             <h2 id="result-title" class="text-2xl font-black uppercase">¡RESULTADOS!</h2>
-            <div id="result-content" class="bg-slate-900/50 p-4 rounded-xl text-left text-sm space-y-2">
+            <div id="result-content" class="result-card p-4 rounded-xl text-left text-sm space-y-2">
             </div>
-            <button onclick="resetGame()" class="w-full bg-gradient-to-r from-red-600 to-red-700 py-4 rounded-2xl font-bold text-lg btn-ios shadow-lg">
-                🔄 JUGAR DE NUEVO
+            <button onclick="resetGame()" class="neon-btn w-full py-4">
+                <span>🔄 JUGAR DE NUEVO</span>
             </button>
         </div>
-    </div>
 
-    <!-- Audio elements -->
-    <audio id="sfx-reveal" src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbqWEyMmiW1+3HZS4uYo3R7sxgLSxgi9DtyWQtLWCJ0O7KYy0sYIvQ7slkLi1gidDuy2MtLGCL0O7JZC0sYIrQ7slkLi1gidDuy2MtLGCL0O7JZC0sYIrQ7slkLi1gidDuy2MtLGCL0O7J"></audio>
-    <audio id="sfx-vote" src="data:audio/wav;base64,UklGRl9CAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhOkIAAA=="></audio>
+    </div>
 
     <script>
         const wordBank = {
             general: ["Pizza", "París", "iPhone", "Fútbol", "Elefante", "Netflix", "Guitarra", "Dinosaurio", "Chocolate", "Tiburón", "Espada", "Marte", "Cine", "Hamburguesa", "Avión", "Batman", "Zombi", "Minecraft", "Sushi", "Playa", "Robot", "Nube", "Fuego", "Hielo", "Luna", "Sol", "Estrella", "Teléfono", "Reloj", "Cerveza", "Gato", "Perro", "Pájaro", "Coche", "Casa", "Libro", "Agua", "Tierra", "Viento", "Música", "Danza"],
-            peliculas: ["Matrix", "Titanic", "Avatar", "Gladiador", "Frozen", "Toy Story", "Jurassic Park", "El Rey León", "Volver al Futuro", "Star Wars", "Harry Potter", "El Señor de los Anillos", "Spider-Man", "Iron Man", "Batman", "Terminator", "Alien", "Depredador", "Jaws", "Psicosis", "Inception", "Interstellar", "Coco", "Encanto", "Moana", "Buscando a Nemo", "Los Increíbles", "Shrek", "Mi Villano Favorito", "Minions", "Piratas del Caribe", "El Mago de Oz", "E.T.", " Tibble", "Forrest Gump", "Pulp Fiction"],
+            peliculas: ["Matrix", "Titanic", "Avatar", "Gladiador", "Frozen", "Toy Story", "Jurassic Park", "El Rey León", "Volver al Futuro", "Star Wars", "Harry Potter", "El Señor de los Anillos", "Spider-Man", "Iron Man", "Batman", "Terminator", "Alien", "Depredador", "Jaws", "Psicosis", "Inception", "Interstellar", "Coco", "Encanto", "Moana", "Buscando a Nemo", "Los Increíbles", "Shrek", "Mi Villano Favorito", "Minions", "Piratas del Caribe", "El Mago de Oz", "E.T.", "Tibbie", "Forrest Gump", "Pulp Fiction"],
             paises: ["España", "Francia", "Italia", "Alemania", "Japón", "Brasil", "Argentina", "México", "Canadá", "Estados Unidos", "China", "India", "Australia", "Egipto", "Grecia", "Rusia", "Inglaterra", "Portugal", "Colombia", "Perú", "Chile", "Uruguay", "Venezuela", "Cuba", "Corea", "Tailandia", "Vietnam", "Marruecos", "Turquía", "Noruega", "Suecia", "Finlandia", "Dinamarca", "Holanda", "Bélgica", "Suiza", "Austria", "Irlanda", "Escocia"],
             comida: ["Tacos", "Paella", "Sushi", "Pizza", "Hamburguesa", "Lasaña", "Curry", "Ramen", "Ceviche", "Empanadas", "Churrasco", "Milanesa", "Feijoada", "Bandeja Paisa", "Arepa", "Patacón", "Causa", "Anticuchos", "Chicha", "Pisco Sour", "Guisado", "Tamales", "Pupusas", "Chimichanga", "Enchiladas", "Tostada", "Gordita", "Quesadilla", "Burrito", "Taco", "Pasta", "Risotto", "Paella", "Tortilla", "Croissant", "Bagel", "Donut", "Cupcake", "Brownie"],
             tecnologia: ["Computadora", "Internet", "Inteligencia Artificial", "Robot", "Aplicación", "Videojuego", "Redes Sociales", "Smartphone", "Tablet", "Wifi", "Bluetooth", "Nube", "Big Data", "Ciberseguridad", "Blockchain", "Criptomoneda", "Realidad Virtual", "Realidad Aumentada", "Drone", "Impresora 3D", "GPS", "Sensor", "Pantalla Táctil", "Procesador", "Memoria", "Disco Duro", "Batería", "Cargador", "Cable", "Auriculares", "Teclado", "Mouse", "Cámara", "Micrófono", "Altavoz", "Router", "Módem", "Servidor", "Base de Datos"],
             deportes: ["Fútbol", "Baloncesto", "Tenis", "Natación", "Atletismo", "Béisbol", "Fútbol Americano", "Voleibol", "Boxeo", "Artes Marciales", "Gimnasia", "Ciclismo", "Esquí", "Surf", "Escalada", "Golf", "Hockey", "Rugby", "Críquet", "Ping Pong", "Bádminton", "Patinaje", "Lucha", "Carrera", "Maratón", "Triatlón", "Equitación", "Tiro", "Arquería", "Lacrosse", "Handball", "Waterpolo", "Remo", "Piragüismo", "Snowboard", "Skateboard", "BMX", "Wrestling"],
-            animales: ["León", "Tigre", "Elefante", "Jirafa", "Mono", "Conejo", "Perro", "Gato", "Pájaro", "Pez", "Delfín", "Ballena", "Tiburón", "Serpiente", "Lagarto", "Rana", "Tortuga", "Cocodrilo", "Hipopótamo", "Rinoceronte", "Zebra", "Caballo", "Vaca", "Cerdo", "Oveja", "Gallo", "Pato", "Águila", "Búho", "Murciélago", "Lobo", "Zorro", "oso", "Panda", "Koala", "Canguro", "Pingüino", "Foca", "Ballena", "Pulpo"],
+            animales: ["León", "Tigre", "Elefante", "Jirafa", "Mono", "Conejo", "Perro", "Gato", "Pájaro", "Pez", "Delfín", "Ballena", "Tiburón", "Serpiente", "Lagarto", "Rana", "Tortuga", "Cocodrilo", "Hipopótamo", "Rinoceronte", "Zebra", "Caballo", "Vaca", "Cerdo", "Oveja", "Gallo", "Pato", "Águila", "Búho", "Murciélago", "Lobo", "Zorro", "Oso", "Panda", "Koala", "Canguro", "Pingüino", "Foca", "Ballena", "Pulpo"],
             colores: ["Rojo", "Azul", "Verde", "Amarillo", "Naranja", "Morado", "Rosa", "Negro", "Blanco", "Gris", "Marrón", "Beige", "Celeste", "Turquesa", "Violeta", "Lila", "Dorado", "Plateado", "Cyan", "Magenta", "Oscuro", "Claro", "Brillante", "Opaco", "Neón", "Pastel", "Matizado", "Sólido", "Transparente", "Opaco", "Carmesí", "Escarlata", "Grisáceo", "Azulado", "Verdoso", "Amarillento", "Anaranjado"]
         };
 
@@ -233,10 +607,12 @@
         function addPlayerInput() {
             const container = document.getElementById('names-container');
             const div = document.createElement('div');
-            div.className = "flex gap-2 player-input-container";
+            div.className = "flex gap-2";
             div.innerHTML = `
-                <input type="text" placeholder="Nombre del jugador..." class="player-input flex-1 bg-slate-800/50 border border-slate-700 p-3 rounded-xl text-white focus:border-red-500 transition text-sm">
-                <button onclick="removePlayer(this)" class="px-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-500 hover:text-red-500">✕</button>
+                <div class="neon-input flex-1">
+                    <input type="text" placeholder="Nombre del jugador..." class="player-input">
+                </div>
+                <button onclick="removePlayer(this)" class="remove-btn">✕</button>
             `;
             container.appendChild(div);
             container.scrollTop = container.scrollHeight;
@@ -244,14 +620,14 @@
 
         function removePlayer(btn) {
             const container = document.getElementById('names-container');
-            if (container.children.length > 2) {
+            if (container.children.length > 1) {
                 btn.parentElement.remove();
             }
         }
 
         function removeLastPlayer() {
             const container = document.getElementById('names-container');
-            if (container.children.length > 2) {
+            if (container.children.length > 1) {
                 container.removeChild(container.lastChild);
             }
         }
@@ -259,34 +635,20 @@
         function selectCategory(cat) {
             selectedCategory = cat;
             document.querySelectorAll('.category-btn').forEach(btn => {
-                btn.classList.remove('bg-red-600', 'text-white');
-                btn.classList.add('bg-slate-700', 'text-slate-400');
+                btn.classList.remove('active');
             });
-            document.getElementById(`cat-${cat}`).classList.remove('bg-slate-700', 'text-slate-400');
-            document.getElementById(`cat-${cat}`).classList.add('bg-red-600', 'text-white');
+            document.getElementById(`cat-${cat}`).classList.add('active');
         }
 
         function setImpostorCount(count) {
             impostorCount = count;
             document.querySelectorAll('.count-btn').forEach((btn, idx) => {
                 if (idx + 1 === count) {
-                    btn.classList.remove('bg-slate-700', 'text-slate-400');
-                    btn.classList.add('bg-red-600', 'text-white');
+                    btn.classList.add('active');
                 } else {
-                    btn.classList.remove('bg-red-600', 'text-white');
-                    btn.classList.add('bg-slate-700', 'text-slate-400');
+                    btn.classList.remove('active');
                 }
             });
-        }
-
-        function playSound(type) {
-            try {
-                const audio = document.getElementById(type);
-                if (audio) {
-                    audio.currentTime = 0;
-                    audio.play().catch(() => {});
-                }
-            } catch (e) {}
         }
 
         function initGame() {
@@ -326,7 +688,6 @@
             
             showScreen('screen-transition');
             updateTransitionScreen();
-            playSound('sfx-reveal');
         }
 
         function updateTransitionScreen() {
@@ -341,26 +702,23 @@
             
             if (typeof role === 'object' && role.isImpostor) {
                 display.innerText = "🕵️ IMPOSTOR 🕵️";
-                display.style.color = '#ef4444';
-                display.classList.add('animate-glow');
+                display.classList.add('impostor');
                 indicator.classList.remove('hidden');
-                indicator.className = "px-4 py-2 rounded-xl font-bold text-sm bg-red-600 text-white";
+                indicator.className = "px-4 py-2 rounded-lg font-bold text-sm bg-red-600 text-white";
                 indicator.innerText = "¡No tienes palabra! Debes adivinar.";
             } else {
                 display.innerText = role;
-                display.style.color = '#ffffff';
-                display.classList.remove('animate-glow');
+                display.classList.remove('impostor');
                 indicator.classList.remove('hidden');
-                indicator.className = "px-4 py-2 rounded-xl font-bold text-sm bg-green-600 text-white";
+                indicator.className = "px-4 py-2 rounded-lg font-bold text-sm bg-green-600 text-white";
                 indicator.innerText = "¡No reveles tu palabra!";
             }
             
             showScreen('screen-reveal');
-            playSound('sfx-reveal');
         }
 
         function nextStep() {
-            document.getElementById('secret-word').classList.remove('animate-glow');
+            document.getElementById('secret-word').classList.remove('impostor');
             currentIndex++;
             if (currentIndex < playerNames.length) {
                 updateTransitionScreen();
@@ -381,7 +739,7 @@
         function showNotification(msg) {
             const div = document.createElement('div');
             div.className = "fixed inset-0 flex items-center justify-center z-50 pointer-events-none";
-            div.innerHTML = `<div class="bg-red-600 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-2xl animate-bounce">${msg}</div>`;
+            div.innerHTML = `<div class="bg-red-600 px-6 py-3 rounded-xl font-bold text-sm shadow-2xl animate-bounce">${msg}</div>`;
             document.body.appendChild(div);
             setTimeout(() => div.remove(), 2000);
         }
@@ -444,13 +802,10 @@
             playerNames.forEach(name => {
                 const div = document.createElement('div');
                 const hasVoted = votedPlayers.has(name);
-                div.className = `player-card p-4 rounded-xl flex justify-between items-center cursor-pointer transition-all ${hasVoted ? 'bg-green-900/30 border-green-500' : 'hover:bg-slate-800'}`;
+                div.className = `vote-card ${hasVoted ? 'voted' : ''}`;
                 div.innerHTML = `
                     <span class="font-bold">${name}</span>
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs text-slate-500">${votes[name]} votos</span>
-                        <span class="text-lg">${hasVoted ? '✅' : '🗳️'}</span>
-                    </div>
+                    <span class="voted-badge">${votes[name]} votos</span>
                 `;
                 div.onclick = () => castVote(name);
                 container.appendChild(div);
@@ -466,7 +821,6 @@
             
             votes[forName]++;
             votedPlayers.add(currentPlayer);
-            playSound('sfx-vote');
             renderVotingPlayers();
             showNotification(`Voto registrado para ${forName}`);
         }
@@ -548,7 +902,7 @@
             timeLeft = 120;
             votedPlayers.clear();
             updateTimerDisplay();
-            showScreen('setup');
+            showScreen('screen-setup');
             
             const container = document.getElementById('names-container');
             container.innerHTML = '';
