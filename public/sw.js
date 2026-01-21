@@ -8,6 +8,7 @@ const urlsToCache = [
   '/js/index.js',
   '/js/game.js',
   '/manifest.json',
+  '/icons/icon.svg',
   '/icons/icon-192.png',
   '/icons/icon-512.png'
 ];
@@ -27,26 +28,31 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  if (request.method !== 'GET') return;
+  if (!['http:', 'https:'].includes(url.protocol)) return;
+
   event.respondWith(
-    caches.match(event.request)
+    caches.match(request)
       .then((response) => {
         if (response) {
           return response;
         }
-        return fetch(event.request).then((response) => {
+        return fetch(request).then((response) => {
           if (!response || response.status !== 200 || response.type !== 'basic') {
             return response;
           }
           const responseToCache = response.clone();
           caches.open(CACHE_NAME)
             .then((cache) => {
-              cache.put(event.request, responseToCache);
+              cache.put(request, responseToCache);
             });
           return response;
+        }).catch(() => {
+          return caches.match('/index.html');
         });
-      })
-      .catch(() => {
-        return caches.match('/index.html');
       })
   );
 });
