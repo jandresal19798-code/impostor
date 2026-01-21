@@ -112,6 +112,10 @@ const wordBank = {
 };
 
 function startLocalGame() {
+    console.log('=== START LOCAL GAME ===');
+    console.log('localPlayerNames:', localPlayerNames);
+    console.log('localSelectedCategory:', localSelectedCategory);
+    
     isLocalMode = true;
     updateLocalPlayersList();
     
@@ -125,7 +129,11 @@ function startLocalGame() {
     }
 
     const words = wordBank[localSelectedCategory];
+    console.log('Words available:', words.length);
+    
     const secretWord = words[Math.floor(Math.random() * words.length)];
+    console.log('Secret word:', secretWord);
+    
     localPlayerRoles = new Array(localPlayerNames.length).fill(secretWord);
     
     let impostors = new Set();
@@ -133,15 +141,23 @@ function startLocalGame() {
         impostors.add(Math.floor(Math.random() * localPlayerNames.length));
     }
     
+    console.log('Impostor indices:', [...impostors]);
+    
     impostors.forEach(idx => {
         localPlayerRoles[idx] = { word: "IMPOSTOR", isImpostor: true };
     });
 
+    console.log('localPlayerRoles:', localPlayerRoles);
+    
     localCurrentIndex = 0;
     showLocalTransitionScreen();
 }
 
 function showLocalTransitionScreen() {
+    console.log('=== SHOW LOCAL TRANSITION ===');
+    console.log('Current index:', localCurrentIndex);
+    console.log('Player name:', localPlayerNames[localCurrentIndex]);
+    
     const msgEl = document.getElementById('waiting-message');
     const codeEl = document.getElementById('waiting-room-code');
     if (msgEl) msgEl.textContent = `Pasá el teléfono a: ${localPlayerNames[localCurrentIndex].toUpperCase()}`;
@@ -150,13 +166,24 @@ function showLocalTransitionScreen() {
 }
 
 function confirmLocalReveal() {
+    console.log('=== CONFIRM LOCAL REVEAL ===');
+    console.log('localCurrentIndex:', localCurrentIndex);
+    console.log('localPlayerRoles:', localPlayerRoles);
+    
     const display = document.getElementById('secret-word');
     const role = localPlayerRoles[localCurrentIndex];
     const indicator = document.getElementById('role-indicator');
     
-    if (!display || !role || !indicator) return;
+    console.log('Role for current player:', role);
+    console.log('typeof role:', typeof role);
+    
+    if (!display || !role || !indicator) {
+        console.log('ERROR: Missing elements');
+        return;
+    }
     
     if (typeof role === 'object' && role.isImpostor) {
+        console.log('Player is IMPOSTOR');
         display.innerText = '🕵️ IMPOSTOR 🕵️';
         display.classList.add('impostor');
         indicator.classList.remove('hidden');
@@ -165,6 +192,7 @@ function confirmLocalReveal() {
         indicator.style.color = '#fff';
         indicator.innerText = '¡No tienes palabra!';
     } else {
+        console.log('Player word:', role);
         display.innerText = typeof role === 'string' ? role : '???';
         display.classList.remove('impostor');
         indicator.classList.remove('hidden');
@@ -178,13 +206,18 @@ function confirmLocalReveal() {
 }
 
 function nextLocalStep() {
+    console.log('=== NEXT LOCAL STEP ===');
     const display = document.getElementById('secret-word');
     if (display) display.classList.remove('impostor');
     localCurrentIndex++;
     
+    console.log('New index:', localCurrentIndex);
+    console.log('Total players:', localPlayerNames.length);
+    
     if (localCurrentIndex < localPlayerNames.length) {
         showLocalTransitionScreen();
     } else {
+        console.log('All players revealed, showing playing screen');
         showScreen('screen-playing');
         const hostControls = document.getElementById('host-controls');
         const playerControls = document.getElementById('player-controls');
