@@ -337,13 +337,23 @@ socket.on('game-started', (data) => {
 });
 
 socket.on('your-role', (data) => {
+    console.log('your-role event received:', JSON.stringify(data));
     myRole = data.role;
+    console.log('myRole:', myRole);
+    
     const display = document.getElementById('secret-word');
     const indicator = document.getElementById('role-indicator');
     
-    if (!display || !indicator) return;
+    console.log('display element:', display);
+    console.log('indicator element:', indicator);
+    
+    if (!display || !indicator) {
+        console.log('ERROR: Elements not found!');
+        return;
+    }
     
     if (myRole && myRole.isImpostor) {
+        console.log('Player is IMPOSTOR');
         display.innerText = '🕵️ IMPOSTOR 🕵️';
         display.classList.add('impostor');
         indicator.classList.remove('hidden');
@@ -351,17 +361,29 @@ socket.on('your-role', (data) => {
         indicator.style.background = 'linear-gradient(135deg, #ec4899, #a855f7)';
         indicator.style.color = '#fff';
         indicator.innerText = '¡No tienes palabra!';
-    } else {
-        display.innerText = typeof myRole === 'string' ? myRole : '???';
+    } else if (typeof myRole === 'string') {
+        console.log('Player word:', myRole);
+        display.innerText = myRole;
         display.classList.remove('impostor');
         indicator.classList.remove('hidden');
         indicator.className = 'px-4 py-2 rounded-lg font-bold text-sm';
         indicator.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
         indicator.style.color = '#fff';
         indicator.innerText = '¡No reveles tu palabra!';
+    } else {
+        console.log('ERROR: Invalid role:', myRole);
+        display.innerText = '???';
+        display.classList.remove('impostor');
+        indicator.classList.remove('hidden');
+        indicator.className = 'px-4 py-2 rounded-lg font-bold text-sm';
+        indicator.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+        indicator.style.color = '#fff';
+        indicator.innerText = 'Error: Rol inválido';
     }
     
+    console.log('Showing reveal screen...');
     showScreen('screen-reveal');
+    console.log('Current screen should be screen-reveal');
 });
 
 function confirmReveal() {
