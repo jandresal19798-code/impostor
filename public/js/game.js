@@ -156,7 +156,7 @@ function confirmLocalReveal() {
     
     if (!display || !role || !indicator) return;
     
-    if (role.isImpostor) {
+    if (typeof role === 'object' && role.isImpostor) {
         display.innerText = '🕵️ IMPOSTOR 🕵️';
         display.classList.add('impostor');
         indicator.classList.remove('hidden');
@@ -165,7 +165,7 @@ function confirmLocalReveal() {
         indicator.style.color = '#fff';
         indicator.innerText = '¡No tienes palabra!';
     } else {
-        display.innerText = role.word;
+        display.innerText = typeof role === 'string' ? role : '???';
         display.classList.remove('impostor');
         indicator.classList.remove('hidden');
         indicator.className = 'px-4 py-2 rounded-lg font-bold text-sm';
@@ -343,7 +343,7 @@ socket.on('your-role', (data) => {
     
     if (!display || !indicator) return;
     
-    if (myRole.isImpostor) {
+    if (myRole && myRole.isImpostor) {
         display.innerText = '🕵️ IMPOSTOR 🕵️';
         display.classList.add('impostor');
         indicator.classList.remove('hidden');
@@ -352,7 +352,7 @@ socket.on('your-role', (data) => {
         indicator.style.color = '#fff';
         indicator.innerText = '¡No tienes palabra!';
     } else {
-        display.innerText = myRole.word || '???';
+        display.innerText = typeof myRole === 'string' ? myRole : '???';
         display.classList.remove('impostor');
         indicator.classList.remove('hidden');
         indicator.className = 'px-4 py-2 rounded-lg font-bold text-sm';
