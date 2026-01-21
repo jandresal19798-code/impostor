@@ -90,6 +90,9 @@ function updateLocalPlayersList() {
     localPlayerNames = Array.from(inputs).map(i => i.value.trim()).filter(n => n !== "");
     const countEl = document.getElementById('local-player-count');
     if (countEl) countEl.textContent = `${localPlayerNames.length}/12`;
+    console.log('=== UPDATE LOCAL PLAYERS ===');
+    console.log('Inputs found:', inputs.length);
+    console.log('localPlayerNames:', localPlayerNames);
 }
 
 const wordBank = {
@@ -113,11 +116,13 @@ const wordBank = {
 
 function startLocalGame() {
     console.log('=== START LOCAL GAME ===');
-    console.log('localPlayerNames:', localPlayerNames);
-    console.log('localSelectedCategory:', localSelectedCategory);
+    console.log('localPlayerNames before update:', localPlayerNames);
     
-    isLocalMode = true;
     updateLocalPlayersList();
+    
+    console.log('localPlayerNames after update:', localPlayerNames);
+    console.log('Count:', localPlayerNames.length);
+    console.log('localSelectedCategory:', localSelectedCategory);
     
     if (localPlayerNames.length < 3) {
         showNotification('Se necesitan al menos 3 jugadores');
@@ -129,10 +134,10 @@ function startLocalGame() {
     }
 
     const words = wordBank[localSelectedCategory];
-    console.log('Words available:', words.length);
+    console.log('Words available:', words.length, 'Category:', localSelectedCategory);
     
     const secretWord = words[Math.floor(Math.random() * words.length)];
-    console.log('Secret word:', secretWord);
+    console.log('Secret word selected:', secretWord);
     
     localPlayerRoles = new Array(localPlayerNames.length).fill(secretWord);
     
@@ -147,7 +152,7 @@ function startLocalGame() {
         localPlayerRoles[idx] = { word: "IMPOSTOR", isImpostor: true };
     });
 
-    console.log('localPlayerRoles:', localPlayerRoles);
+    console.log('Final localPlayerRoles:', localPlayerRoles);
     
     localCurrentIndex = 0;
     showLocalTransitionScreen();
@@ -155,14 +160,34 @@ function startLocalGame() {
 
 function showLocalTransitionScreen() {
     console.log('=== SHOW LOCAL TRANSITION ===');
-    console.log('Current index:', localCurrentIndex);
-    console.log('Player name:', localPlayerNames[localCurrentIndex]);
+    console.log('localCurrentIndex:', localCurrentIndex);
+    console.log('localPlayerNames:', localPlayerNames);
+    console.log('localPlayerNames length:', localPlayerNames.length);
     
     const msgEl = document.getElementById('waiting-message');
     const codeEl = document.getElementById('waiting-room-code');
-    if (msgEl) msgEl.textContent = `Pasá el teléfono a: ${localPlayerNames[localCurrentIndex].toUpperCase()}`;
-    if (codeEl) codeEl.textContent = 'LOCAL';
+    const screenEl = document.getElementById('screen-waiting');
+    
+    console.log('waiting-message element:', msgEl);
+    console.log('waiting-room-code element:', codeEl);
+    console.log('screen-waiting element:', screenEl);
+    
+    if (msgEl) {
+        const playerName = localPlayerNames[localCurrentIndex] || 'UNKNOWN';
+        msgEl.textContent = `Pasá el teléfono a: ${playerName.toUpperCase()}`;
+        console.log('Updated message to:', msgEl.textContent);
+    }
+    if (codeEl) {
+        codeEl.textContent = 'LOCAL';
+        console.log('Updated code to: LOCAL');
+    }
+    if (screenEl) {
+        screenEl.classList.remove('hidden');
+        console.log('Removed hidden from screen-waiting');
+    }
+    
     showScreen('screen-waiting');
+    console.log('Called showScreen');
 }
 
 function confirmLocalReveal() {
