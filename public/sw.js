@@ -1,4 +1,4 @@
-const CACHE_NAME = 'impostor-v2';
+const CACHE_NAME = 'impostor-v3';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -7,6 +7,7 @@ const urlsToCache = [
   '/css/game.css',
   '/js/index.js',
   '/js/game.js',
+  '/js/music.js',
   '/manifest.json',
   '/icons/icon.svg',
   '/icons/icon-192.png',
@@ -14,6 +15,11 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(urlsToCache);
+    }).catch(() => {})
+  );
   self.skipWaiting();
 });
 
@@ -22,9 +28,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
+          return caches.delete(cacheName);
         })
       );
     })
