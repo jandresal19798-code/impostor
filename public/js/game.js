@@ -12,6 +12,7 @@ let localImpostorCount = 1;
 let localSelectedCategory = 'general';
 let localPlayerRoles = [];
 let localCurrentIndex = 0;
+let isLocalMode = false;
 
 socket.on('connect', () => {
     const statusEl = document.getElementById('connection-status');
@@ -103,6 +104,7 @@ const wordBank = {
 };
 
 function startLocalGame() {
+    isLocalMode = true;
     updateLocalPlayersList();
     
     if (localPlayerNames.length < 3) {
@@ -360,6 +362,14 @@ function confirmReveal() {
     socket.emit('role-revealed');
 }
 
+function handleRevealConfirm() {
+    if (isLocalMode) {
+        confirmLocalReveal();
+    } else {
+        confirmReveal();
+    }
+}
+
 socket.on('next-player', (data) => {
     showScreen('screen-waiting');
     const msgEl = document.getElementById('waiting-message');
@@ -476,6 +486,7 @@ function resetGame() {
 }
 
 socket.on('game-reset', (data) => {
+    isLocalMode = false;
     playersList = data.players;
     updatePlayersList();
     showScreen('screen-lobby');
@@ -491,6 +502,7 @@ socket.on('game-reset', (data) => {
 });
 
 function leaveRoom() {
+    isLocalMode = false;
     socket.emit('leave-room');
     showConnectScreen();
 }
