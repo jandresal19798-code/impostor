@@ -198,6 +198,22 @@ io.on('connection', (socket) => {
             return;
         }
 
+        // Check if this socket ID is already in the room
+        const existingSocketPlayer = room.players.find(p => p.id === socket.id);
+        if (existingSocketPlayer) {
+            console.log(`Socket ${socket.id} already in room as ${existingSocketPlayer.name}, updating...`);
+            // Socket reconnected, don't add a new player
+            socket.join(room.code);
+            socket.roomCode = room.code;
+            socket.emit('room-joined', {
+                code: room.code,
+                players: room.players.map(p => ({ id: p.id, name: p.name, isHost: p.id === room.host })),
+                isHost: false,
+                gameState: room.gameState
+            });
+            return;
+        }
+
         const existingPlayer = room.players.find(p => p.name.toLowerCase() === playerName.toLowerCase());
         if (existingPlayer) {
             socket.emit('error', 'Este nombre ya está en uso');
@@ -212,6 +228,7 @@ io.on('connection', (socket) => {
             revealed: false
         };
 
+        console.log(`Adding player ${playerName} with socket ${socket.id}`);
         room.players.push(player);
         socket.join(room.code);
         socket.roomCode = room.code;
@@ -252,10 +269,19 @@ io.on('connection', (socket) => {
             socket.emit('error', 'Se necesitan al menos 3 jugadores');
             return;
         }
+        if (room.players.length > 12) {
+            socket.emit('error', 'Máximo 12 jugadores');
+            return;
+        }
+
+        console.log(`Starting game in room ${room.code} with ${room.players.length} players`);
 
         // Assign roles
         const words = room.wordBank[room.selectedCategory];
+        console.log(`Category: ${room.selectedCategory}, Words available: ${words.length}`);
+        
         room.secretWord = words[Math.floor(Math.random() * words.length)];
+        console.log(`Secret word assigned: ${room.secretWord}`);
         
         room.playerRoles = new Array(room.players.length).fill(room.secretWord);
         
@@ -263,6 +289,8 @@ io.on('connection', (socket) => {
         while(impostors.size < room.impostorCount) {
             impostors.add(Math.floor(Math.random() * room.players.length));
         }
+        
+        console.log(`Impostors at indices: ${[...impostors]}`);
         
         impostors.forEach(idx => {
             room.playerRoles[idx] = { word: "IMPOSTOR", isImpostor: true };
@@ -273,6 +301,7 @@ io.on('connection', (socket) => {
             p.role = room.playerRoles[idx];
             p.hasVoted = false;
             p.revealed = false;
+            console.log(`Player ${p.name} (${p.id}) role: ${JSON.stringify(p.role)}`);
         });
 
         room.gameState = 'revealing';
@@ -293,6 +322,7 @@ io.on('connection', (socket) => {
 
         // Send role to each player
         room.players.forEach(player => {
+            console.log(`Sending role to ${player.name}: ${JSON.stringify(player.role)}`);
             io.to(player.id).emit('your-role', {
                 role: player.role,
                 currentPlayer: room.currentPlayer,
