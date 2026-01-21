@@ -352,7 +352,7 @@ socket.on('your-role', (data) => {
         indicator.style.color = '#fff';
         indicator.innerText = '¡No tienes palabra!';
     } else {
-        display.innerText = myRole.word;
+        display.innerText = myRole.word || '???';
         display.classList.remove('impostor');
         indicator.classList.remove('hidden');
         indicator.className = 'px-4 py-2 rounded-lg font-bold text-sm';
