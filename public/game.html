@@ -26,6 +26,10 @@
             <span id="status-text">Conectando...</span>
         </div>
         
+        <button id="music-toggle-btn" onclick="toggleMusic()" class="fixed top-4 right-4 z-50 w-10 h-10 rounded-full flex items-center justify-center text-lg cursor-pointer transition-all duration-300" style="background: rgba(30, 41, 59, 0.9); border: 1px solid rgba(99, 102, 241, 0.3);" aria-label="Activar música">
+            🔇
+        </button>
+        
         <div class="game-card w-full max-w-md p-8 relative">
         
         <!-- Pantalla de Conexión -->
@@ -103,7 +107,7 @@
                 <p class="text-slate-400 text-sm">Compartí el código con tus amigos</p>
             </div>
 
-            <div class="grid grid-cols-4 gap-2 p-1.5 bg-slate-900/50 rounded-xl" role="group" aria-label="Selección de categoría">
+            <div class="grid grid-cols-4 gap-1.5 p-1.5 bg-slate-900/50 rounded-xl" role="group" aria-label="Selección de categoría">
                 <button onclick="selectCategory('general')" id="cat-general" class="category-btn active" aria-pressed="true">GENERAL</button>
                 <button onclick="selectCategory('peliculas')" id="cat-peliculas" class="category-btn" aria-pressed="false">PELÍCULAS</button>
                 <button onclick="selectCategory('paises')" id="cat-paises" class="category-btn" aria-pressed="false">PAÍSES</button>
@@ -112,6 +116,14 @@
                 <button onclick="selectCategory('deportes')" id="cat-deportes" class="category-btn" aria-pressed="false">DEPORTES</button>
                 <button onclick="selectCategory('animales')" id="cat-animales" class="category-btn" aria-pressed="false">ANIMALES</button>
                 <button onclick="selectCategory('colores')" id="cat-colores" class="category-btn" aria-pressed="false">COLORES</button>
+                <button onclick="selectCategory('profesiones')" id="cat-profesiones" class="category-btn" aria-pressed="false">PROFES.</button>
+                <button onclick="selectCategory('musica')" id="cat-musica" class="category-btn" aria-pressed="false">MÚSICA</button>
+                <button onclick="selectCategory('viajes')" id="cat-viajes" class="category-btn" aria-pressed="false">VIAJES</button>
+                <button onclick="selectCategory('naturaleza')" id="cat-naturaleza" class="category-btn" aria-pressed="false">NATUR.</button>
+                <button onclick="selectCategory('espacio')" id="cat-espacio" class="category-btn" aria-pressed="false">ESPACIO</button>
+                <button onclick="selectCategory('historia')" id="cat-historia" class="category-btn" aria-pressed="false">HISTORIA</button>
+                <button onclick="selectCategory('arte')" id="cat-arte" class="category-btn" aria-pressed="false">ARTE</button>
+                <button onclick="selectCategory('emociones')" id="cat-emociones" class="category-btn" aria-pressed="false">EMOCIÓN</button>
             </div>
 
             <div class="bg-slate-900/50 p-4 rounded-xl">
@@ -171,7 +183,7 @@
                 <p class="text-slate-400 text-sm">Todos en el mismo dispositivo</p>
             </div>
 
-            <div class="grid grid-cols-4 gap-2 p-1.5 bg-slate-900/50 rounded-xl">
+            <div class="grid grid-cols-4 gap-1.5 p-1.5 bg-slate-900/50 rounded-xl" role="group" aria-label="Selección de categoría">
                 <button onclick="selectLocalCategory('general')" id="cat-local-general" class="category-btn active">GENERAL</button>
                 <button onclick="selectLocalCategory('peliculas')" id="cat-local-peliculas" class="category-btn">PELÍCULAS</button>
                 <button onclick="selectLocalCategory('paises')" id="cat-local-paises" class="category-btn">PAÍSES</button>
@@ -180,6 +192,14 @@
                 <button onclick="selectLocalCategory('deportes')" id="cat-local-deportes" class="category-btn">DEPORTES</button>
                 <button onclick="selectLocalCategory('animales')" id="cat-local-animales" class="category-btn">ANIMALES</button>
                 <button onclick="selectLocalCategory('colores')" id="cat-local-colores" class="category-btn">COLORES</button>
+                <button onclick="selectLocalCategory('profesiones')" id="cat-local-profesiones" class="category-btn">PROFES.</button>
+                <button onclick="selectLocalCategory('musica')" id="cat-local-musica" class="category-btn">MÚSICA</button>
+                <button onclick="selectLocalCategory('viajes')" id="cat-local-viajes" class="category-btn">VIAJES</button>
+                <button onclick="selectLocalCategory('naturaleza')" id="cat-local-naturaleza" class="category-btn">NATUR.</button>
+                <button onclick="selectLocalCategory('espacio')" id="cat-local-espacio" class="category-btn">ESPACIO</button>
+                <button onclick="selectLocalCategory('historia')" id="cat-local-historia" class="category-btn">HISTORIA</button>
+                <button onclick="selectLocalCategory('arte')" id="cat-local-arte" class="category-btn">ARTE</button>
+                <button onclick="selectLocalCategory('emociones')" id="cat-local-emociones" class="category-btn">EMOCIÓN</button>
             </div>
 
             <div class="bg-slate-900/50 p-4 rounded-xl">
@@ -301,6 +321,7 @@
         </div>
 
     <script src="/js/game.js"></script>
+    <script src="/js/music.js"></script>
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {

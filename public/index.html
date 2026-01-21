@@ -62,6 +62,12 @@
                 <span>🎮 JUGAR AHORA</span>
             </a>
             
+            <div style="margin-top: 1rem;">
+                <button id="music-toggle-btn" onclick="toggleMusic()" class="github-btn" aria-label="Activar música">
+                    🔇
+                </button>
+            </div>
+            
             <div>
                 <a href="https://github.com" class="github-btn" target="_blank">
                     ⭐ Ver en GitHub
@@ -90,6 +96,7 @@
     </footer>
 
     <script src="/js/index.js"></script>
+    <script src="/js/music.js"></script>
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {

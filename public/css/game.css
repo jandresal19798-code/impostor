@@ -157,15 +157,15 @@ body {
 
 .category-btn {
     position: relative;
-    padding: 0.5rem 0.25rem;
-    font-size: 0.65rem;
+    padding: 0.35rem 0.15rem;
+    font-size: 0.55rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.03em;
     color: var(--text-muted);
     background: rgba(51, 65, 85, 0.8);
     border: 1px solid rgba(99, 102, 241, 0.1);
-    border-radius: 0.5rem;
+    border-radius: 0.4rem;
     cursor: pointer;
     transition: all 0.3s ease;
 }
@@ -181,6 +181,10 @@ body {
     color: #e2e8f0;
     background: rgba(71, 85, 105, 0.9);
     border-color: rgba(236, 72, 153, 0.3);
+}
+
+.category-btn:active {
+    transform: scale(0.95);
 }
 
 .neon-input {
