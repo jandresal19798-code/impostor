@@ -11,7 +11,7 @@ function initAudio() {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         gainNode = audioContext.createGain();
         gainNode.connect(audioContext.destination);
-        gainNode.gain.value = 0.12;
+        gainNode.gain.value = 0.4;
         console.log('Audio initialized');
         return audioContext;
     } catch (e) {
@@ -61,7 +61,7 @@ function createBackgroundAmbience() {
         
         setTimeout(() => {
             if (isPlaying && oscGain) {
-                oscGain.gain.linearRampToValueAtTime(0.06, audioContext.currentTime + 3);
+                oscGain.gain.linearRampToValueAtTime(0.15, audioContext.currentTime + 3);
             }
         }, i * 800);
     });
@@ -86,7 +86,7 @@ function playRandomMelody() {
         panner.pan.value = (Math.random() - 0.5) * 1.5;
         
         noteGain.gain.setValueAtTime(0, audioContext.currentTime);
-        noteGain.gain.linearRampToValueAtTime(0.08, audioContext.currentTime + 0.15);
+        noteGain.gain.linearRampToValueAtTime(0.25, audioContext.currentTime + 0.15);
         noteGain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 1.2);
         
         osc.connect(noteGain);
