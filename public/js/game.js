@@ -474,7 +474,7 @@ function confirmReveal() {
 
 function handleRevealConfirm() {
     if (isLocalMode) {
-        confirmLocalReveal();
+        nextLocalStep();
     } else {
         confirmReveal();
     }
