@@ -179,10 +179,12 @@ function showLocalTransitionScreen() {
     const msgEl = document.getElementById('waiting-message');
     const codeEl = document.getElementById('waiting-room-code');
     const screenEl = document.getElementById('screen-waiting');
+    const nextBtn = document.getElementById('btn-local-next');
     
     console.log('waiting-message element:', msgEl);
     console.log('waiting-room-code element:', codeEl);
     console.log('screen-waiting element:', screenEl);
+    console.log('btn-local-next element:', nextBtn);
     
     if (msgEl) {
         const playerName = localPlayerNames[localCurrentIndex] || 'UNKNOWN';
@@ -197,7 +199,12 @@ function showLocalTransitionScreen() {
         screenEl.classList.remove('hidden');
         console.log('Removed hidden from screen-waiting');
     }
+    if (nextBtn) {
+        nextBtn.classList.remove('hidden');
+        console.log('Showed next button for local mode');
+    }
     
+    isLocalMode = true;
     showScreen('screen-waiting');
     console.log('Called showScreen');
 }
@@ -401,6 +408,9 @@ function startGame() {
 }
 
 socket.on('game-started', (data) => {
+    isLocalMode = false;
+    const nextBtn = document.getElementById('btn-local-next');
+    if (nextBtn) nextBtn.classList.add('hidden');
     showScreen('screen-waiting');
     const msgEl = document.getElementById('waiting-message');
     if (msgEl) msgEl.textContent = `Jugador ${data.currentPlayer + 1} de ${data.totalPlayers} está viendo su rol...`;
@@ -471,6 +481,9 @@ function handleRevealConfirm() {
 }
 
 socket.on('next-player', (data) => {
+    isLocalMode = false;
+    const nextBtn = document.getElementById('btn-local-next');
+    if (nextBtn) nextBtn.classList.add('hidden');
     showScreen('screen-waiting');
     const msgEl = document.getElementById('waiting-message');
     if (msgEl) msgEl.textContent = `Jugador ${data.currentPlayer + 1} de ${data.totalPlayers} está viendo su rol...`;
