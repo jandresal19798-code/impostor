@@ -1,5 +1,8 @@
 const socket = io();
 
+console.log('game.js: Script started');
+console.log('game.js: socket object created', typeof socket, socket);
+
 let playerName = '';
 let isHost = false;
 let selectedCategory = 'general';
@@ -14,7 +17,10 @@ let localPlayerRoles = [];
 let localCurrentIndex = 0;
 let isLocalMode = false;
 
+console.log('game.js: Variables initialized');
+
 socket.on('connect', () => {
+    console.log('game.js: Socket connected');
     const statusEl = document.getElementById('connection-status');
     if (statusEl) statusEl.classList.remove('hidden');
     const textEl = document.getElementById('status-text');
@@ -22,6 +28,7 @@ socket.on('connect', () => {
 });
 
 socket.on('disconnect', () => {
+    console.log('game.js: Socket disconnected');
     const textEl = document.getElementById('status-text');
     if (textEl) textEl.textContent = 'Desconectado';
 });
@@ -30,6 +37,8 @@ socket.on('connect_error', (err) => {
     console.error('Socket connection error:', err);
     showNotification('Error de conexión');
 });
+
+console.log('game.js: Socket event listeners set up');
 
 function showScreen(id) {
     ['screen-connect', 'screen-join', 'screen-create', 'screen-lobby', 'screen-local', 'screen-waiting', 'screen-reveal', 'screen-playing', 'screen-voting', 'screen-results'].forEach(s => {
@@ -44,8 +53,11 @@ function showConnectScreen() { showScreen('screen-connect'); }
 function showJoinScreen() { showScreen('screen-join'); }
 function showCreateScreen() { showScreen('screen-create'); }
 function showLocalScreen() { 
+    console.log('game.js: showLocalScreen() called');
+    console.log('game.js: showLocalScreen - localPlayerNames before update:', localPlayerNames);
     showScreen('screen-local'); 
     updateLocalPlayersList();
+    console.log('game.js: showLocalScreen - localPlayerNames after update:', localPlayerNames);
 }
 
 function selectLocalCategory(cat) {
@@ -639,3 +651,10 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+console.log('game.js: Script loaded completely');
+console.log('game.js: Functions available:', {
+    showLocalScreen: typeof showLocalScreen,
+    startLocalGame: typeof startLocalGame,
+    updateLocalPlayersList: typeof updateLocalPlayersList
+});

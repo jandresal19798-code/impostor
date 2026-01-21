@@ -19,7 +19,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="/socket.io/socket.io.js"></script>
-    <link rel="stylesheet" href="/css/game.css?v=7">
+    <link rel="stylesheet" href="/css/game.css?v=8">
 </head>
     <body class="flex items-center justify-center min-h-screen p-4">
         <div id="confetti-container" class="fixed inset-0 pointer-events-none z-50 overflow-hidden"></div>
@@ -61,7 +61,7 @@
                 <button onclick="showCreateScreen()" class="neon-border-btn w-full py-4" aria-label="Crear nueva sala">
                     🏠 CREAR NUEVA SALA
                 </button>
-                <button onclick="showLocalScreen()" class="neon-border-btn w-full py-4" aria-label="Juego local" style="color: #22c55e;">
+                <button id="btn-local-game" class="neon-border-btn w-full py-4" aria-label="Juego local" style="color: #22c55e;">
                     📱 JUEGO LOCAL
                 </button>
             </div>
@@ -323,8 +323,8 @@
 
         </div>
 
-    <script src="/js/game.js?v=7"></script>
-    <script src="/js/music.js?v=7"></script>
+    <script src="/js/game.js?v=8"></script>
+    <script src="/js/music.js?v=8"></script>
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -337,6 +337,26 @@
             });
         });
       }
+      
+      // Add event listener for local game button
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded');
+        const localBtn = document.getElementById('btn-local-game');
+        if (localBtn) {
+            console.log('Local game button found');
+            localBtn.addEventListener('click', function() {
+                console.log('Button clicked via addEventListener');
+                if (typeof showLocalScreen === 'function') {
+                    showLocalScreen();
+                } else {
+                    console.error('showLocalScreen not defined!');
+                    alert('Error: showLocalScreen no está definida');
+                }
+            });
+        } else {
+            console.error('Local game button not found!');
+        }
+      });
     </script>
 </body>
 </html>
