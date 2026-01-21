@@ -16,6 +16,10 @@ let localSelectedCategory = 'general';
 let localPlayerRoles = [];
 let localCurrentIndex = 0;
 let isLocalMode = false;
+let localTimerInterval = null;
+let localTimeLeft = 120;
+let localVotes = {};
+let localHasVoted = {};
 
 console.log('game.js: Variables initialized');
 
@@ -262,12 +266,169 @@ function nextLocalStep() {
         showLocalTransitionScreen();
     } else {
         console.log('All players revealed, showing playing screen');
-        showScreen('screen-playing');
-        const hostControls = document.getElementById('host-controls');
-        const playerControls = document.getElementById('player-controls');
-        if (hostControls) hostControls.classList.remove('hidden');
-        if (playerControls) playerControls.classList.add('hidden');
+        startLocalDebate();
     }
+}
+
+function startLocalDebate() {
+    console.log('=== START LOCAL DEBATE ===');
+    isLocalMode = true;
+    
+    const hostControls = document.getElementById('host-controls');
+    const playerControls = document.getElementById('player-controls');
+    if (hostControls) hostControls.classList.remove('hidden');
+    if (playerControls) playerControls.classList.add('hidden');
+    
+    localTimeLeft = 120;
+    updateLocalTimerDisplay();
+    
+    localTimerInterval = setInterval(() => {
+        localTimeLeft--;
+        updateLocalTimerDisplay();
+        if (localTimeLeft <= 0) {
+            clearInterval(localTimerInterval);
+            showNotification('¡Tiempo agotado!');
+        }
+    }, 1000);
+    
+    showScreen('screen-playing');
+    console.log('Local debate started with timer');
+}
+
+function updateLocalTimerDisplay() {
+    const timerDisplay = document.getElementById('timer-display');
+    const timerBar = document.getElementById('timer-bar');
+    if (timerDisplay) {
+        const mins = Math.floor(localTimeLeft / 60);
+        const secs = localTimeLeft % 60;
+        timerDisplay.innerText = `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+    if (timerBar) timerBar.style.width = `${(localTimeLeft / 120) * 100}%`;
+}
+
+function startLocalVoting() {
+    console.log('=== START LOCAL VOTING ===');
+    if (localTimerInterval) {
+        clearInterval(localTimerInterval);
+    }
+    
+    localVotes = {};
+    localHasVoted = {};
+    localPlayerNames.forEach(name => {
+        localVotes[name] = 0;
+        localHasVoted[name] = false;
+    });
+    
+    renderLocalVotingPlayers();
+    showScreen('screen-voting');
+}
+
+function renderLocalVotingPlayers() {
+    const container = document.getElementById('voting-players');
+    if (!container) return;
+    
+    container.innerHTML = localPlayerNames.map(name => `
+        <div class="vote-card ${localHasVoted[name] ? 'voted' : ''}" onclick="castLocalVote('${name}')">
+            <span class="font-bold">${name}</span>
+            <span class="voted-badge">${localVotes[name]} votos</span>
+        </div>
+    `).join('');
+}
+
+function castLocalVote(playerName) {
+    console.log('=== CAST LOCAL VOTE ===', playerName);
+    localVotes[playerName]++;
+    localHasVoted[playerName] = true;
+    renderLocalVotingPlayers();
+    
+    const allVoted = localPlayerNames.every(name => localHasVoted[name]);
+    if (allVoted) {
+        setTimeout(showLocalResults, 1000);
+    }
+}
+
+function showLocalResults() {
+    console.log('=== SHOW LOCAL RESULTS ===');
+    
+    let maxVotes = 0;
+    let eliminated = null;
+    Object.entries(localVotes).forEach(([name, count]) => {
+        if (count > maxVotes) {
+            maxVotes = count;
+            eliminated = name;
+        }
+    });
+    
+    const isImpostorEliminated = localPlayerRoles.some((role, idx) => {
+        if (typeof role === 'object' && role.isImpostor) {
+            return localPlayerNames[idx] === eliminated;
+        }
+        return false;
+    });
+    
+    const impostors = [];
+    localPlayerRoles.forEach((role, idx) => {
+        if (typeof role === 'object' && role.isImpostor) {
+            impostors.push(localPlayerNames[idx]);
+        }
+    });
+    
+    const secretWord = localPlayerRoles.find(role => typeof role === 'string');
+    
+    const resultEmoji = document.getElementById('result-emoji');
+    const resultTitle = document.getElementById('result-title');
+    
+    if (isImpostorEliminated) {
+        if (resultEmoji) resultEmoji.innerText = '🎉';
+        if (resultTitle) {
+            resultTitle.textContent = '¡GANARON LOS CIUDADANOS!';
+            resultTitle.className = 'text-2xl font-black uppercase';
+            resultTitle.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+            resultTitle.style.webkitBackgroundClip = 'text';
+            resultTitle.style.webkitTextFillColor = 'transparent';
+            resultTitle.style.backgroundClip = 'text';
+        }
+        launchConfetti();
+    } else {
+        if (resultEmoji) resultEmoji.innerText = '😈';
+        if (resultTitle) {
+            resultTitle.textContent = '¡GANARON LOS IMPOSTORES!';
+            resultTitle.className = 'text-2xl font-black uppercase';
+            resultTitle.style.background = 'linear-gradient(135deg, #ec4899, #a855f7)';
+            resultTitle.style.webkitBackgroundClip = 'text';
+            resultTitle.style.webkitTextFillColor = 'transparent';
+            resultTitle.style.backgroundClip = 'text';
+        }
+    }
+    
+    let content = `<p class="font-bold text-white">${eliminated} fue eliminado/a</p>`;
+    content += `<p class="text-slate-400 text-xs">Recibió ${maxVotes} votos</p>`;
+    
+    content += `<p class="font-bold text-white mt-3">Impostores:</p>`;
+    impostors.forEach(name => {
+        content += `<p class="text-sm" style="color: #ec4899;">👤 ${name}</p>`;
+    });
+    
+    content += `<p class="font-bold text-white mt-3">Palabra secreta:</p>`;
+    content += `<p class="text-sm" style="color: #22c55e;">${secretWord}</p>`;
+    
+    const resultContent = document.getElementById('result-content');
+    if (resultContent) resultContent.innerHTML = content;
+    
+    showScreen('screen-results');
+}
+
+function resetLocalGame() {
+    console.log('=== RESET LOCAL GAME ===');
+    if (localTimerInterval) {
+        clearInterval(localTimerInterval);
+    }
+    localCurrentIndex = 0;
+    isLocalMode = false;
+    localPlayerRoles = [];
+    localVotes = {};
+    localHasVoted = {};
+    showLocalScreen();
 }
 
 function selectCategory(cat) {
@@ -522,7 +683,11 @@ function updateGameControls() {
 }
 
 function startVoting() {
-    socket.emit('start-voting');
+    if (isLocalMode) {
+        startLocalVoting();
+    } else {
+        socket.emit('start-voting');
+    }
 }
 
 socket.on('voting-started', (data) => {
@@ -595,7 +760,11 @@ socket.on('game-results', (data) => {
 });
 
 function resetGame() {
-    socket.emit('reset-game');
+    if (isLocalMode) {
+        resetLocalGame();
+    } else {
+        socket.emit('reset-game');
+    }
 }
 
 socket.on('game-reset', (data) => {
