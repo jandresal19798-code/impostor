@@ -77,6 +77,13 @@ function checkUrlParams() {
         if (codeInput) {
             codeInput.value = joinCode.toUpperCase();
         }
+        
+        const savedName = localStorage.getItem('impostor_player_name');
+        const nameInput = document.getElementById('join-player-name');
+        if (savedName && nameInput) {
+            nameInput.value = savedName;
+        }
+        
         showJoinScreen();
     }
 }
@@ -513,7 +520,7 @@ function setImpostorCount(count) {
 
 function joinRoom() {
     const codeInput = document.getElementById('room-code-input');
-    const nameInput = document.getElementById('player-name');
+    const nameInput = document.getElementById('join-player-name') || document.getElementById('player-name');
     const code = codeInput ? codeInput.value.trim().toUpperCase() : '';
     playerName = nameInput ? nameInput.value.trim() : '';
     
@@ -525,7 +532,8 @@ function joinRoom() {
         showNotification('Ingresa el código de sala');
         return;
     }
-
+    
+    localStorage.setItem('impostor_player_name', playerName);
     socket.emit('join-room', { code, name: playerName });
 }
 
@@ -538,6 +546,8 @@ function createRoom() {
         return;
     }
 
+    localStorage.setItem('impostor_player_name', playerName);
+    
     if (!socket.connected) {
         showNotification('Conectando... intenta de nuevo');
         return;
