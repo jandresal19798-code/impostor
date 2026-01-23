@@ -44,6 +44,45 @@ socket.on('connect_error', (err) => {
 
 console.log('game.js: Socket event listeners set up');
 
+function shareRoom() {
+    const codeDisplay = document.getElementById('room-code-display');
+    if (!codeDisplay) return;
+    
+    const code = codeDisplay.textContent.trim();
+    if (!code || code === '---') return;
+    
+    const shareUrl = `${window.location.origin}/game?join=${code}`;
+    const shareText = `¡Únete a mi sala de El Impostor! Código: ${code}`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: 'El Impostor - Sala de juego',
+            text: shareText,
+            url: shareUrl
+        }).catch(console.error);
+    } else {
+        navigator.clipboard.writeText(`${shareText}\n${shareUrl}`).then(() => {
+            showNotification('¡Enlace copiado!');
+        }).catch(() => {
+            prompt('Copia este enlace para compartir:', shareUrl);
+        });
+    }
+}
+
+function checkUrlParams() {
+    const params = new URLSearchParams(window.location.search);
+    const joinCode = params.get('join');
+    if (joinCode) {
+        const codeInput = document.getElementById('room-code-input');
+        if (codeInput) {
+            codeInput.value = joinCode.toUpperCase();
+        }
+        showJoinScreen();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', checkUrlParams);
+
 function showScreen(id) {
     ['screen-connect', 'screen-join', 'screen-create', 'screen-lobby', 'screen-local', 'screen-waiting', 'screen-reveal', 'screen-playing', 'screen-voting', 'screen-results'].forEach(s => {
         const el = document.getElementById(s);
